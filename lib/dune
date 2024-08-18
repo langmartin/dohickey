@@ -1,0 +1,5 @@
+(library
+ (name dohickey)
+ (libraries yojason h2-lwt-unix alcotest cmdliner sqlite3)
+ (preprocess
+  (pps ppx_blob)))

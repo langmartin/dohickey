@@ -1,0 +1,25 @@
+* Network
+
+1. [ ] Client
+   1. [ ] Connect & send
+   2. [ ] Local storage
+   3. [ ] Resend everything
+   4. [ ] Cursors
+
+2. [ ] Server
+   1. [ ] Recv idempotently, sqlite
+   2. [ ] Broadcast
+   3. [ ] Average votes
+
+* Pages
+
+1. [ ] Sign in
+
+2. [ ] Index of all sheets, create new sheet via url
+
+3. [ ] Table
+   1. [ ] Title
+   2. [ ] Add decision
+   3. [ ] Add criteria
+   4. [ ] Vote
+   5. [ ] Export markdown

@@ -1,0 +1,4 @@
+(executable
+ (public_name dohickey)
+ (name main)
+ (libraries dohickey yojason h2-lwt-unix alcotest cmdliner sqlite3))
