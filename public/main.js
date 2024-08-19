@@ -1,4 +1,4 @@
-const net = (function () {
+const Net = (function () {
     function response (res) {
         if (res.status == 200) {
             return res;
@@ -67,18 +67,52 @@ const Lc = (function () {
 })();
 
 const Ae = (function () {
-    var timestamp = "";
+    const node_id = (Math.random() + 1).toString(36).substring(7);
     var items = {};
 
     function clock (fetch) {
         fetch.then((res) => {
             const items = res.json();
             const ts = items.map((item) => item.time).reduce(String.max);
+            Lc.recv(ts);
         });
     }
 
+    function put(row, col, v, type) {
+        const time = Lc.send() + "-" + node_id;
+        const item = {row: row, col: col, text: v, time: Lc.send(), type: type};
+        items.k = item;
+        Net.send(item);
+    }
+
+    function put_text(row, col, v) {
+        put(row, col, v, "text");
+    }
+
+    function vote(row, col, v) {
+        put(row, col, v, "vote");
+    }
 
     return {
-        put: put
+        put_text: put_text,
+        vote: vote
+    };
+})();
+
+const App = (function () {
+    function recv(item) {
+        switch(item.type) {
+        case "text":
+            // update cell
+            break;
+        case "vote":
+            // update overlay
+            break;
+        case "voting":
+            //show or hide overlay
+            break;
+        case "score":
+            //change the color
+        }
     };
 })();
