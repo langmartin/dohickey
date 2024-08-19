@@ -1,8 +1,7 @@
 (library
  (name dohickey)
  (libraries yojson
-            h2
-            h2-lwt-unix
+            dream
             sqlite3)
  (preprocess
   (pps ppx_blob)))

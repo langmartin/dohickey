@@ -22,7 +22,7 @@
  (depends ocaml
           dune
           yojson
-          h2-lwt-unix
+          dream
           alcotest
           sqlite3)
  (tags
