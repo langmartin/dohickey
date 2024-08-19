@@ -1,5 +1,5 @@
 let start listen data =
-  if listen != "" && Sys.file_exists data then
+  if listen <> "" && Sys.file_exists data then
     `Ok (Printf.printf "starting")
   else
     `Error (false, "data directory must exist")
