@@ -46,12 +46,27 @@ const Item = (function () {
     return Item;
 })();
 
-const lt = {
-    send: (clock) => {
-    }
-};
+const Lc = (function () {
+    var the_clock = 0;
 
-const ae = (function () {
+    function time_of(str) {
+        const t = String.split(str, "-", 1);
+        return parseInt(t, 10);
+    }
+
+    return {
+        send: () => {
+            the_clock = the_clock + 1;
+        },
+        recv: (ts) => {
+            const next = Math.max(the_clock, time_of(ts)) + 1;
+            the_clock = next;
+            return next;
+        }
+    };
+})();
+
+const Ae = (function () {
     var timestamp = "";
     var items = {};
 
