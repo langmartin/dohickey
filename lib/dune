@@ -1,5 +1,10 @@
 (library
  (name dohickey)
- (libraries yojason h2-lwt-unix alcotest cmdliner sqlite3)
+ (libraries yojson
+            h2
+            h2-lwt-unix
+            sqlite3)
  (preprocess
   (pps ppx_blob)))
+
+(include_subdirs qualified)

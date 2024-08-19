@@ -21,7 +21,7 @@
  (description "A longer description")
  (depends ocaml
           dune
-          yojason
+          yojson
           h2-lwt-unix
           alcotest
           sqlite3)

@@ -1,3 +1,4 @@
 (test
  (name test_dohickey)
- (libraries yojason h2-lwt-unix alcotest cmdliner sqlite3))
+ (libraries alcotest
+            dohickey))

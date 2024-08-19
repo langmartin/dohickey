@@ -1,4 +1,6 @@
 const Net = (function () {
+    var the_offset = 0;
+
     function response (res) {
         if (res.status == 200) {
             return res;
@@ -11,7 +13,7 @@ const Net = (function () {
         const hs = new Headers();
         hs.append("content-type", "application/json");
 
-        const req = new Request("/a1/poll", {
+        const req = new Request("/a1/poll?at=" + the_offset, {
             method: "GET",
         });
 
