@@ -12,14 +12,7 @@ type item =
 
 module Coda = struct
   type t = coda
-
-  let compare a b =
-    if a.time = b.time then
-      0
-    else if a.time < b.time then
-      -1
-    else
-      1
+  let compare a b = String.compare a.time b.time
 end
 
 module StringMap = Map.Make(String)
@@ -32,19 +25,19 @@ let empty : item_history StringMap.t = StringMap.empty
 (* Conversion from json *)
 
 let coda_of_json j =
-  let open Yojson.Basic.Util in
+  let open Yojson.Safe.Util in
   { time = j |> member "time" |> to_string;
     user = j |> member "user" |> to_string}
 
 let vote_of_json j =
-  let open Yojson.Basic.Util in
+  let open Yojson.Safe.Util in
   {row = j |> member "row" |> to_int;
    col = j |> member "col" |> to_int;
    id = j |> member "id" |> to_string;
    rank = j |> member "rank" |> to_int;}
 
 let item_of_json j =
-  let open Yojson.Basic.Util in
+  let open Yojson.Safe.Util in
   match j |> member "type" |> to_string with
   | "text" -> Text {coda = coda_of_json j;
                     row = j |> member "row" |> to_int;
@@ -55,6 +48,10 @@ let item_of_json j =
   | "stop" -> Stop {coda = coda_of_json j; id = j |> member "id" |> to_string}
   | "result" -> Result {coda = coda_of_json j; vote = vote_of_json j}
   | _ -> None
+
+let items_of_json j =
+  let open Yojson.Safe.Util in
+  j |> to_list |> List.map item_of_json
 
 (* Cleanup the names *)
 

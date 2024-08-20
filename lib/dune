@@ -4,6 +4,6 @@
             dream
             sqlite3)
  (preprocess
-  (pps ppx_blob)))
+  (pps ppx_blob lwt_ppx)))
 
 (include_subdirs qualified)
