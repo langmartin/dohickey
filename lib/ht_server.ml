@@ -8,10 +8,10 @@ let html content =
     ~headers:["content-type", "text/html"]
     content
 
-let handle_items _table items = 
+let handle_items _table items =
   let _xs = items
            |> Yojson.Safe.from_string
-           |> Items.items_of_json
+           |> Items.of_json
   in
   ()
 
@@ -48,14 +48,10 @@ let () =
            );
       );
 
-    Dream.post "/a1/send"
+    Dream.post "/a1/send/:table"
       (fun request ->
-         let%lwt body = Dream.body request in
-         let _items =
-           body
-           |> Yojson.Safe.from_string
-           |> Items.items_of_json
-         in
+         let%lwt items = Dream.body request in
+         handle_items table items;
          (* store & broadcast items *)
          Dream.empty `OK);
 

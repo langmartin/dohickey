@@ -75,6 +75,16 @@ let put item m =
     else
       m
 
+let puts items m =
+  List.fold_left (fun (m, l) item ->
+      let m' = put item m in
+      if m == m' then
+        (m, l)
+      else
+        (m', item :: l))
+    (m, [])
+    items
+
 let of_json j =
   let open Yojson.Safe.Util in
   j |> to_list |> List.map Item.of_json

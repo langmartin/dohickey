@@ -1,6 +1,6 @@
 module StringMap = Map.Make(String)
 
-let empty : Items.items StringMap.t = StringMap.empty
+let empty : Items.t StringMap.t = StringMap.empty
 
 let get table store =
   let open StringMap in
