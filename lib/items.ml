@@ -1,7 +1,7 @@
 module Coda = struct
   type t = {time: string; user: string}
   let empty = {time = ""; user = ""}
-  let compare a b = 
+  let compare a b =
     match String.compare a.time b.time with
     | 0 -> String.compare a.user b.user
     | c -> c
@@ -24,43 +24,41 @@ module Vote = struct
 end
 
 module Item = struct
-  type t =
-    | Text of {coda: Coda.t; row: int; col: int; text: string}
-    | Call of {coda: Coda.t; id: string}
-    | Stop of {coda: Coda.t; id: string}
-    | Vote of {coda: Coda.t; vote: Vote.t}
-    | Result of {coda: Coda.t; vote: Vote.t}
-    | None of {coda: Coda.t}
+  type body =
+    | Text of {row: int; col: int; text: string}
+    | Call of {id: string}
+    | Stop of {id: string}
+    | Vote of Vote.t
+    | Result of Vote.t
+
+  type t = {coda: Coda.t; body: body}
 
   let key item =
     let open Format in
-    match item with
+    match item.body with
     | Text item -> sprintf "text-%d%d" item.row item.col
-    | Vote item -> sprintf "vote-%d%d" item.vote.row item.vote.col
-    | Result item -> sprintf "result-%d%d" item.vote.row item.vote.col
+    | Vote item -> sprintf "vote-%d%d" item.row item.col
+    | Result item -> sprintf "result-%d%d" item.row item.col
     | Call item -> sprintf "call-%s" item.id
     | Stop item -> sprintf "stop-%s" item.id
-    | None _ -> ""
 
   exception Invalid_type
 
   let of_json j =
     let open Yojson.Safe.Util in
-    match j |> member "type" |> to_string with
-    | "text" -> Text {coda = Coda.of_json j;
-                      row = j |> member "row" |> to_int;
-                      col = j |> member "col" |> to_int;
-                      text = j |> member "text" |> to_string}
-    | "vote" -> Vote {coda = Coda.of_json j; vote = Vote.of_json j}
-    | "call" -> Call {coda = Coda.of_json j; id = j |> member "id" |> to_string}
-    | "stop" -> Stop {coda = Coda.of_json j; id = j |> member "id" |> to_string}
-    | "result" -> Result {coda = Coda.of_json j; vote = Vote.of_json j}
-    | _ -> raise Invalid_type
+    {
+      coda = Coda.of_json j;
+      body = match j |> member "type" |> to_string with
+        | "text" -> Text {row = j |> member "row" |> to_int;
+                          col = j |> member "col" |> to_int;
+                          text = j |> member "text" |> to_string}
+        | "vote" -> Vote (Vote.of_json j)
+        | "call" -> Call {id = j |> member "id" |> to_string}
+        | "stop" -> Stop {id = j |> member "id" |> to_string}
+        | "result" -> Result (Vote.of_json j)
+        | _ -> raise Invalid_type
+    }
 end
-
-(* module CodaMap = Map.Make(Coda) *)
-(* type items = CodaMap *)
-(* let empty : Item.t CodaMap.t = CodaMap.empty *)
 
 module StringMap = Map.Make(String)
 type t = Item.t StringMap.t
@@ -76,7 +74,7 @@ let put item m =
       add key item m
     else
       m
-      
+
 let of_json j =
   let open Yojson.Safe.Util in
   j |> to_list |> List.map Item.of_json
