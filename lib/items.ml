@@ -75,6 +75,7 @@ let put item m =
     else
       m
 
+(** reduce [items] into map [m] returning the updated map and the list of items that were newer by [coda] *)
 let puts items m =
   List.fold_left (fun (m, l) item ->
       let m' = put item m in
@@ -84,6 +85,16 @@ let puts items m =
         (m', item :: l))
     (m, [])
     items
+
+exception EmptyList
+
+let to_node_id (items : Item.t list) =
+  match items with
+  | [] -> raise EmptyList
+  | item :: _ ->
+    match String.split_on_char '-' item.coda.time with
+    | _time :: node_id :: [] -> node_id
+    | _ -> raise EmptyList
 
 let of_json j =
   let open Yojson.Safe.Util in

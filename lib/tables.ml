@@ -8,7 +8,7 @@ let get table store =
   | None -> Items.empty
   | Some items -> items
 
-let put table item store =
-  let items = get table store in
-  let items' = Items.put item items in
-  StringMap.add table items' store
+let puts table items store =
+  let itemm = get table store in
+  let (itemm', items') = Items.puts items itemm in
+  (StringMap.add table itemm' store, items')

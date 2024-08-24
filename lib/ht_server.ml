@@ -8,12 +8,24 @@ let html content =
     ~headers:["content-type", "text/html"]
     content
 
-let handle_items _table items =
-  let _xs = items
-           |> Yojson.Safe.from_string
-           |> Items.of_json
+let handle_items table items =
+  items
+  |> Yojson.Safe.from_string
+  |> Items.of_json
+  |> World.puts table
+
+let handle_client table websocket =
+  let client_id = World.add_client websocket in
+  let rec loop () =
+    match%lwt Dream.receive websocket with
+    | Some items ->
+      handle_items table items;
+      loop ()
+    | None ->
+      World.stop_client client_id;
+      Dream.close_websocket websocket
   in
-  ()
+  loop ()
 
 let () =
   Dream.run
@@ -39,13 +51,7 @@ let () =
 
     Dream.get "/a1/socket/:table"
       (fun _request ->
-         Dream.websocket (fun websocket ->
-             match%lwt Dream.receive websocket with
-             | Some items ->
-               handle_items table items;
-               Dream.send websocket "ok"
-             | _ -> Dream.close_websocket websocket
-           );
+         Dream.websocket (fun websocket -> handle_client table websocket);
       );
 
     Dream.post "/a1/send/:table"

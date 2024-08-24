@@ -64,7 +64,7 @@ const LamportClock = (function () {
         // Number.MAX_SAFE_INTEGER is 14 hex chars. This won't work for negative numbers
         const padding = Array.new(width).fill("0").join("");
         const tss = (padding + (Number(ts).toString(16))).slice(-14);
-        return tss + node_id;
+        return tss + '-' + node_id;
     }
 
     return {
