@@ -1,4 +1,4 @@
-const Net = (function () {
+const Network = (function () {
     var the_offset = 0;
 
     function response (res) {
@@ -48,27 +48,39 @@ const Item = (function () {
     return Item;
 })();
 
-const Lc = (function () {
+const LamportClock = (function () {
     var the_clock = 0;
 
-    function time_of(str) {
+    const width = 14;
+    const padding = Array.new(width).fill("0").join("");
+    const the_node = (padding + Math.random().toString(16).slice(2)).slice(width);
+
+    function of_string(str) {
         const t = String.split(str, "-", 1);
         return parseInt(t, 10);
     }
 
+    function to_string(ts, node_id = the_node, width = 14) {
+        // Number.MAX_SAFE_INTEGER is 14 hex chars. This won't work for negative numbers
+        const padding = Array.new(width).fill("0").join("");
+        const tss = (padding + (Number(ts).toString(16))).slice(-14);
+        return tss + node_id;
+    }
+
     return {
+        node_id: the_node,
         send: () => {
             the_clock = the_clock + 1;
         },
         recv: (ts) => {
-            const next = Math.max(the_clock, time_of(ts)) + 1;
+            const next = Math.max(the_clock, of_string(ts)) + 1;
             the_clock = next;
             return next;
         }
     };
 })();
 
-const Ae = (function () {
+const AntiEntropy = (function (Lc, Net) {
     const node_id = (Math.random() + 1).toString(36).substring(7);
     var items = {};
 
@@ -99,7 +111,7 @@ const Ae = (function () {
         put_text: put_text,
         vote: vote
     };
-})();
+})(LamportClock, Network);
 
 const App = (function () {
     function recv(item) {

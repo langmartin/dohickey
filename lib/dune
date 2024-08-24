@@ -4,6 +4,10 @@
             dream
             sqlite3)
  (preprocess
-  (pps ppx_blob lwt_ppx)))
+  (pps ppx_blob lwt_ppx))
+ (preprocessor_deps
+  (file ../public/index.html)
+  (file ../public/sign-in.html)
+  (file ../public/table.html)))
 
 (include_subdirs qualified)

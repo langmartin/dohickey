@@ -8,6 +8,13 @@ let html content =
     ~headers:["content-type", "text/html"]
     content
 
+let handle_items _table items = 
+  let _xs = items
+           |> Yojson.Safe.from_string
+           |> Items.items_of_json
+  in
+  ()
+
 let () =
   Dream.run
   @@ Dream.logger
@@ -24,10 +31,21 @@ let () =
          | `Ok ["username", username] ->
            let response = Dream.response ~code:302 "" in
            Dream.set_cookie response request "username" username;
-           Dream.set_header response "location" "index";
+           Dream.set_header response "location" "index.html";
            Lwt.return response
 
          | _ -> Dream.empty `Bad_Request
+      );
+
+    Dream.get "/a1/socket/:table"
+      (fun _request ->
+         Dream.websocket (fun websocket ->
+             match%lwt Dream.receive websocket with
+             | Some items ->
+               handle_items table items;
+               Dream.send websocket "ok"
+             | _ -> Dream.close_websocket websocket
+           );
       );
 
     Dream.post "/a1/send"
