@@ -19,7 +19,7 @@ let handle_client table websocket =
   let rec loop () =
     match%lwt Dream.receive websocket with
     | Some items ->
-      handle_items table items;
+      let%lwt ()  = handle_items table items in
       loop ()
     | None ->
       World.stop_client client_id;
@@ -57,8 +57,7 @@ let start_server listen_ip listen_port =
     Dream.post "/a1/send/:table"
       (fun request ->
          let%lwt items = Dream.body request in
-         handle_items table items;
-         (* store & broadcast items *)
+         let%lwt () = handle_items table items in
          Dream.empty `OK);
 
   ]

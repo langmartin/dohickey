@@ -20,5 +20,4 @@ let stop_client id =
 let puts table items =
   let (store', items') = Tables.puts table items !the_store in
   the_store := store';
-  (* maybe I've got an lwt promise to unit at some point rather than a unit? *)
   broadcast items'
