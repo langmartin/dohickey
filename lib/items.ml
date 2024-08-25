@@ -10,6 +10,9 @@ module Coda = struct
     let open Yojson.Safe.Util in
     { time = j |> member "time" |> to_string;
       user = j |> member "user" |> to_string}
+
+  let to_json c =
+    `Assoc [("time", `String c.time); ("user", `String c.user)]
 end
 
 module Vote = struct
@@ -21,6 +24,9 @@ module Vote = struct
      col = j |> member "col" |> to_int;
      id = j |> member "id" |> to_string;
      rank = j |> member "rank" |> to_int;}
+
+  let to_json v =
+    `Assoc [("row", `Int v.row); ("col", `Int v.col); ("id", `String v.id); ("rank", `Int v.rank)]
 end
 
 module Item = struct
@@ -58,6 +64,16 @@ module Item = struct
         | "result" -> Result (Vote.of_json j)
         | _ -> raise Invalid_type
     }
+
+  let to_json i =
+    let j = match i.body with
+      | Text i -> `Assoc [("row", `Int i.row); ("col", `Int i.col); ("text", `String i.text)]
+      | Vote i -> Vote.to_json i
+      | Result i -> Vote.to_json i
+      | Call i -> `Assoc [("id", `String i.id)]
+      | Stop i -> `Assoc [("id", `String i.id)]
+    in
+    `Assoc [("coda", Coda.to_json i.coda); ("body", j)]
 end
 
 module StringMap = Map.Make(String)
@@ -99,6 +115,11 @@ let to_node_id (items : Item.t list) =
 let of_json j =
   let open Yojson.Safe.Util in
   j |> to_list |> List.map Item.of_json
+
+let to_json items =
+  `List (List.map Item.to_json items)
+
+let to_json_str items = Yojson.Basic.pretty_to_string (to_json items)
 
 (* Cleanup the names *)
 

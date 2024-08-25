@@ -27,8 +27,8 @@ let handle_client table websocket =
   in
   loop ()
 
-let () =
-  Dream.run
+let start_server listen_ip listen_port =
+  Dream.run ~interface:listen_ip ~port:listen_port
   @@ Dream.logger
   @@ Dream.origin_referrer_check
   @@ Dream.router [
