@@ -91,7 +91,7 @@ let put item m =
     else
       m
 
-(** reduce [items] into map [m] returning the updated map and the list of items that were newer by [coda] *)
+(** reduce [items] into map [m] returning the updated map and subset of the items that we fresh by [coda] and changed the state of [m] *)
 let puts items m =
   List.fold_left (fun (m, l) item ->
       let m' = put item m in

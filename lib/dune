@@ -8,6 +8,7 @@
  (preprocessor_deps
   (file ../public/index.html)
   (file ../public/sign-in.html)
-  (file ../public/table.html)))
+  (file ../public/table.html)
+  (file ../public/main.js)))
 
 (include_subdirs qualified)

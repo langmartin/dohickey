@@ -1,5 +1,11 @@
 let start listen data =
   if listen <> "" && Sys.file_exists data then
+    let (ip, port) = match String.split_on_char ':' listen with
+    | ip :: port :: _ -> (ip, port)
+    | ip :: _ -> (ip, "8080")
+    | [] -> ("127.0.0.1", "8080")
+    in
+    let _ = Dohickey.Ht_server.start_server ip (int_of_string port) in
     `Ok (Printf.printf "starting")
   else
     `Error (false, "data directory must exist")

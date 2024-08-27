@@ -128,5 +128,12 @@ const App = (function () {
         case "score":
             //change the color
         }
+    }
+
+    return {
+        recv: recv,
+        edit: (ev) => {},
+        add_option: (ev) => {},
+        add_goal: (ev) => {}
     };
 })();

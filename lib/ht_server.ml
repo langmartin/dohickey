@@ -1,11 +1,18 @@
 let index = [%blob "../public/index.html"]
 let table = [%blob "../public/table.html"]
 let sign_in = [%blob "../public/sign-in.html"]
+let main_js = [%blob "../public/main.js"]
 
 let html content =
   fun _request ->
   Dream.respond
     ~headers:["content-type", "text/html"]
+    content
+
+let js content =
+  fun _request ->
+  Dream.respond
+    ~headers:["content-type", "application/json"]
     content
 
 let handle_items table items =
@@ -19,7 +26,7 @@ let handle_client table websocket =
   let rec loop () =
     match%lwt Dream.receive websocket with
     | Some items ->
-      let%lwt ()  = handle_items table items in
+      let%lwt () = handle_items table items in
       loop ()
     | None ->
       World.stop_client client_id;
@@ -28,7 +35,7 @@ let handle_client table websocket =
   loop ()
 
 let start_server listen_ip listen_port =
-  Dream.run ~interface:listen_ip ~port:listen_port
+  Dream.serve ~interface:listen_ip ~port:listen_port
   @@ Dream.logger
   @@ Dream.origin_referrer_check
   @@ Dream.router [
@@ -36,6 +43,10 @@ let start_server listen_ip listen_port =
     Dream.get "/index.html" (html index);
     Dream.get "/table.html" (html table);
     Dream.get "/sign-in.html" (html sign_in);
+    Dream.get "/main.js" (js main_js);
+
+    (* FIXME for development only *)
+    Dream.get "/static/**" (Dream.static "../public");
 
     Dream.post "/sign-in"
       (fun request ->
