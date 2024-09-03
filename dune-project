@@ -24,7 +24,8 @@
           yojson
           dream
           alcotest
-          sqlite3)
+          sqlite3
+          ppx_blob)
  (tags
   (topics "to describe" your project)))
 
