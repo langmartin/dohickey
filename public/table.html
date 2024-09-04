@@ -2,19 +2,28 @@
 <html>
   <head>
     <title>dohickey</title>
+    <script type="text/javascript" src="table.js"></script>
     <script type="text/javascript" src="main.js"></script>
+    <style>
+      th {min-width: 5em; min-height: 2em;}
+      td {min-width: 5em; min-height: 2em;}
+    </style>
   </head>
   <body>
-    <table>
-      <tr>
-        <th onclick="App.edit">Title</th>
-        <td onclick="App.add_option">Option</td>
-      </tr>
-      <tr>
-        <td onclick="App.add_goal()">
-          Goal
-        </td>
-      </tr>
+    <table border="1">
+      <thead>
+        <tr>
+          <td id="0-0" onclick="App.edit">Title</td>
+          <td id="add_option">Option</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row" id="add_goal">
+            Goal
+          </th>
+        </tr>
+      </tbody>
     </table>
   </body>
 </html>

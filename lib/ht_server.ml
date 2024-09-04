@@ -60,9 +60,16 @@ let start_server listen_ip listen_port =
          | _ -> Dream.empty `Bad_Request
       );
 
+    Dream.get "/a1/socket"
+      (fun request ->
+         match Dream.headers request "host" with
+         | host :: _ -> Dream.websocket (fun websocket -> handle_client host websocket);
+         | _ -> Dream.respond ~code:404 ""
+      );
+
     Dream.get "/a1/socket/:table"
       (fun _request ->
-         Dream.websocket (fun websocket -> handle_client table websocket);
+        Dream.websocket (fun websocket -> handle_client table websocket);
       );
 
     Dream.post "/a1/send/:table"
