@@ -138,8 +138,12 @@ const App = (function () {
     function recv(item) {
         switch(item.type) {
         case "text":
-            const tr = document.querySelectorAll("table tr")[item.row];
-            const td = tr.querySelectorAll("td")[item.col];
+            const row_sel = (item.row == 0) ? "table thead tr" : "table tbody tr";
+            const col_sel = (item.col == 0 || item.row == 0) ? "th" : "td";
+            const trs = document.querySelectorAll(row_sel);
+            const tr = trs[item.row];
+            const td = tr.querySelectorAll(col_sel)[item.col];
+            // removes all the other children
             td.innerText = item.text;
             break;
         case "vote":
@@ -177,14 +181,18 @@ const App = (function () {
         return false;
     }
 
-    function text(ev) {
-        const id = ev.target.id.split("-", 2);
-        const row = parseInt(id[0], 10);
-        const col = parseInt(id[1], 10);
+    function on_edit(row, col) {
+        return (ev) => {
+            text(ev, row, col);
+        };
+    }
 
+    function text(ev, row, col) {
         const inp = document.createElement("input");
+        const target = ev.target;
+
         inp.type = "text";
-        inp.value = ev.target.innerText;
+        inp.value = target.innerText;
         inp.addEventListener("change", (ev) => {
             AntiEntropy.put_text(row, col, ev.target.value);
             return false;
@@ -202,6 +210,6 @@ const App = (function () {
     addEventListener("load", init);
 
     return {
-        text: text
+        on_edit: on_edit
     };
 })();

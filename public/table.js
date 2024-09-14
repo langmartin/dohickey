@@ -1,46 +1,4 @@
 const Table = (function () {
-    /*
-    function newRow () {
-        return document.createElement("tr").append(
-            document.createElement("th").addEventListener("click", App.text)
-        );
-    }
-
-    function add_tab(row, col) {
-        const tb = document.querySelector("table tbody");
-        for (var i=1; i<=row; i++) {
-
-            const tr = tb.querySelector(`tr:nth-child(${row})`) || newRow();
-
-            for (var j=1; j<=col; j++) {
-                var el = tr.querySelector(`td:nth-child(${col})`);
-                if (el) continue;
-
-                const td = document.createElement("td");
-                td.id = i + "-" + j;
-                td.addEventListener("click", App.text);
-                tr.append(td);
-            }
-
-            if (tr.childElementCount > 0) {
-                tb.append(tr);
-            }
-        }
-    }
-
-    function add_row(row) {
-        const tr = document.querySelector("table thead");
-        const col = tr.childElementCount - 1;
-        add_tab(row, col);
-    }
-
-    function add_col(col) {
-        const tr = document.querySelector("table tbody");
-        const row = tr.childElementCount - 1;
-        add_tab(row, col);
-    }
-    */
-
     const the_dim = {row: 0, col: 0};
 
     function add_option() {
@@ -63,7 +21,7 @@ const Table = (function () {
 
         tr = document.createElement("tr");
         const th = document.createElement("th");
-        th.addEventListener("click", App.text);
+        th.addEventListener("click", App.on_edit(row, 0));
         th.textContent = "Goal";
         tr.append(th);
         tb.appendChild(tr);
@@ -76,18 +34,18 @@ const Table = (function () {
         th = document.createElement("th");
         th.textContent = "Option";
         th.id = "0-" + col;
-        th.addEventListener("click", App.text);
+        th.addEventListener("click", App.on_edit(0, col));
     }
 
     function istd(row, col) {
         const tb = document.querySelector(`table tbody`);
-        const tr = tb.querySelector(`tr:nth-child(${row + 1})`);
-        var td = tr.querySelector(`td:nth-child(${col + 1})`);
+        const tr = tb.querySelector(`tr:nth-child(${row})`);
+        var td = tr.querySelector(`td:nth-child(${col})`);
         if (td) return;
 
         td = document.createElement("td");
         td.id = row + "-" + col;
-        td.addEventListener("click", App.text);
+        td.addEventListener("click", App.on_edit(row, col));
 
         console.log(td)
 
@@ -101,9 +59,10 @@ const Table = (function () {
         the_dim.row = r;
         the_dim.col = c;
 
-        for (var i=0; i<r; i++) {
+        for (var i=1; i<=r; i++) {
             istr(i);
-            for (var j=0; j<c; j++) {
+            for (var j=1; j<=c; j++) {
+                isth(j);
                 istd(i, j);
             }
         }
