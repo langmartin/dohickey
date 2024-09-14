@@ -196,8 +196,7 @@ const App = (function () {
     function init() {
         Network.sock();
         AntiEntropy.set_recv(recv);
-        document.querySelector("#add_option").addEventListener("click", add_option);
-        document.querySelector("#add_goal").addEventListener("click", add_goal);
+        Table.init();
     };
 
     addEventListener("load", init);
