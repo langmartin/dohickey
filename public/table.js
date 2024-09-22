@@ -14,57 +14,40 @@ const Table = (function () {
         document.querySelector("#add_goal").addEventListener("click", add_goal);
     }
 
-    function istr(row) {
-        const tb = document.querySelector(`table tbody`);
-        var tr = tb.querySelector(`tr:nth-child(${row + 1})`);
-        if (tr) return;
+    function isEl(parent, el, idx, onClick, text) {
+        console.log([el, idx])
 
-        tr = document.createElement("tr");
-        const th = document.createElement("th");
-        th.addEventListener("click", App.on_edit(row, 0));
-        th.textContent = "Goal";
-        tr.append(th);
-        tb.appendChild(tr);
-    }
-
-    function isth(col) {
-        const tr = document.querySelector(`table thead tr`);
-        var th = tr.querySelector(`td:nth-child(${col + 1})`);
-        if (th) return;
-        th = document.createElement("th");
-        th.textContent = "Option";
-        th.id = "0-" + col;
-        th.addEventListener("click", App.on_edit(0, col));
-    }
-
-    function istd(row, col) {
-        const tb = document.querySelector(`table tbody`);
-        const tr = tb.querySelector(`tr:nth-child(${row})`);
-        var td = tr.querySelector(`td:nth-child(${col})`);
-        if (td) return;
-
-        td = document.createElement("td");
-        td.id = row + "-" + col;
-        td.addEventListener("click", App.on_edit(row, col));
-
-        console.log(td)
-
-        tr.append(td);
+        var x = parent.querySelector(`${el}:nth-child(${idx + 1})`);
+        if (x) return x;
+        x = document.createElement(el);
+        if (onClick) x.addEventListener("click", onClick);
+        x.textContent = text;
+        parent.appendChild(x);
+        return x;
     }
 
     function dim(row, col) {
         const r = Math.max(row, the_dim.row);
         const c = Math.max(col, the_dim.col);
-
         the_dim.row = r;
         the_dim.col = c;
 
+        console.log([r, c])
+
+        const tb = document.querySelector(`table tbody`);
+
         for (var i=1; i<=r; i++) {
-            istr(i);
+            var tr = isEl(tb, "tr", i);
+            isEl(tr, "th", 0, App.on_edit(i, 0), "Goal");
+
             for (var j=1; j<=c; j++) {
-                isth(j);
-                istd(i, j);
+                isEl(tr, "td", j, App.on_edit(i, j));
             }
+        }
+
+        for (j=1; j<=c; j++) {
+            const tr0 = document.querySelector(`table thead tr`);
+            isEl(tr0, "th", j, App.on_edit(0, j), "Option");
         }
     }
 
