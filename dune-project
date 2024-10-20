@@ -25,7 +25,9 @@
           dream
           alcotest
           sqlite3
-          ppx_blob)
+          ppx_blob
+          unix
+          checkseum)
  (tags
   (topics "to describe" your project)))
 
