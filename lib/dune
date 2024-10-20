@@ -1,7 +1,17 @@
 (library
  (name dohickey)
- (libraries
-  base64
-  unix))
+ (libraries yojson
+            dream
+            sqlite3
+            unix
+            base64
+            checkseum)
+ (preprocess
+  (pps ppx_blob lwt_ppx))
+ (preprocessor_deps
+  (file ../public/index.html)
+  (file ../public/sign-in.html)
+  (file ../public/table.html)
+  (file ../public/main.js)))
 
 (include_subdirs qualified)
