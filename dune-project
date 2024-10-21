@@ -19,15 +19,16 @@
  (name dohickey)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml
-          dune
-          yojson
+ (depends alcotest
+          checkseum
           dream
-          alcotest
-          sqlite3
+          dune
+          js_of_ocaml
+          js_of_ocaml-ppx
+          ocaml
           ppx_blob
-          unix
-          checkseum)
+          sqlite3
+          yojson)
  (tags
   (topics "to describe" your project)))
 

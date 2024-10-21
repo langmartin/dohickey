@@ -11,11 +11,7 @@ let crc32_of str =
 let time_str unix_time =
   unix_time |> Int32.of_float |> b64_of_int32
 
-let host_bytes = function
-  | `Server -> Unix.gethostname() |> crc32_of
-  | `Client -> ""
-
-let make_id ?(unix_time = Unix.time()) ?(hostname = host_bytes `Server) () =
+let make_id ?(unix_time = Unix.time()) ?(hostname = Unix.gethostname() |> crc32_of) () =
   let host = crc32_of hostname in
   let time = time_str unix_time in
   host ^ time
