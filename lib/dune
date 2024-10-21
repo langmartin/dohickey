@@ -2,7 +2,9 @@
  (name dohickey)
  (libraries yojson
             dream
-            sqlite3)
+            sqlite3
+            unix
+            checkseum)
  (preprocess
   (pps ppx_blob lwt_ppx))
  (preprocessor_deps
