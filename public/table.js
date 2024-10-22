@@ -20,8 +20,9 @@ const Table = (function () {
         var x = parent.querySelector(`${el}:nth-child(${idx + 1})`);
         if (x) return x;
         x = document.createElement(el);
-        if (onClick) x.addEventListener("click", onClick);
+        if (onClick) x.addEventListener("change", onClick);
         x.textContent = text;
+        x.contentEditable=true;
         parent.appendChild(x);
         return x;
     }
@@ -38,16 +39,16 @@ const Table = (function () {
 
         for (var i=1; i<=r; i++) {
             var tr = isEl(tb, "tr", i);
-            isEl(tr, "th", 0, App.on_edit(i, 0), "Goal");
+            isEl(tr, "th", 0, App.onEdit(i, 0), "Goal");
 
             for (var j=1; j<=c; j++) {
-                isEl(tr, "td", j, App.on_edit(i, j));
+                isEl(tr, "td", j, App.onEdit(i, j));
             }
         }
 
         for (j=1; j<=c; j++) {
             const tr0 = document.querySelector(`table thead tr`);
-            isEl(tr0, "th", j, App.on_edit(0, j), "Option");
+            isEl(tr0, "th", j, App.onEdit(0, j), "Option");
         }
     }
 

@@ -20,12 +20,12 @@
  (synopsis "A short synopsis")
  (description "A longer description")
  (depends ocaml
-          dune
-          yojson
-          dream
           alcotest
+          dream
+          dune
+          ppx_blob
           sqlite3
-          ppx_blob)
+          yojson)
  (tags
   (topics "to describe" your project)))
 

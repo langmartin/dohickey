@@ -4,8 +4,10 @@ build: $(sources) Makefile
 	dune build
 
 deps:
-	opam install dune
-	make
+	dune build || true
 	opam install . --deps-only
+
+$(HOME)/.opam/default/bin/dune:
+	opam install dune
 
 .PHONEY: build deps

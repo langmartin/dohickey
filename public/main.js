@@ -181,7 +181,7 @@ const App = (function () {
         return false;
     }
 
-    function on_edit(row, col) {
+    function onEdit(row, col) {
         return (ev) => {
             text(ev, row, col);
         };
@@ -210,6 +210,6 @@ const App = (function () {
     addEventListener("load", init);
 
     return {
-        on_edit: on_edit
+        onEdit: onEdit
     };
 })();
