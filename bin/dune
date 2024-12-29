@@ -1,5 +1,4 @@
 (executable
  (public_name dohickey)
  (name main)
- (libraries dohickey
-            cmdliner))
+ (libraries dohickey cmdliner))

@@ -22,6 +22,8 @@
  (depends ocaml
           alcotest
           dream
+          js_of_ocaml
+          js_of_ocaml-ppx
           dune
           ppx_blob
           sqlite3

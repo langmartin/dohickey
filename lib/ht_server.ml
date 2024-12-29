@@ -1,7 +1,7 @@
 let index = [%blob "../public/index.html"]
 let table = [%blob "../public/table.html"]
 let sign_in = [%blob "../public/sign-in.html"]
-let main_js = [%blob "../public/main.js"]
+let page_js = [%blob "../public/page.js"]
 
 let html content =
   fun _request ->
@@ -43,7 +43,7 @@ let start_server listen_ip listen_port =
     Dream.get "/index.html" (html index);
     Dream.get "/table.html" (html table);
     Dream.get "/sign-in.html" (html sign_in);
-    Dream.get "/main.js" (js main_js);
+    Dream.get "/page.js" (js page_js);
 
     (* FIXME for development only *)
     Dream.get "/static/**" (Dream.static "../public");
