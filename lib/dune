@@ -1,8 +1,8 @@
 (library
  (name dohickey)
- (libraries yojson dream sqlite3)
+ (libraries yojson dream sqlite3 js_of_ocaml)
  (preprocess
-  (pps ppx_blob lwt_ppx))
+  (pps ppx_blob lwt_ppx js_of_ocaml-ppx))
  (preprocessor_deps
   (file ../public/index.html)
   (file ../public/sign-in.html)
