@@ -1,3 +1,24 @@
+* Design
+
+** Service Worker
+
+1. [ ] Connect with an open websocket
+2. [ ] Client request/response
+3. [ ] Push to client
+4. [ ] Local storage idempotently
+5. [ ] Resend everything for anti-entropy
+
+** Client
+
+1. [ ] Query service worker
+2. [ ] Update handler
+
+** Server
+
+1. [ ] Recv idempotently, sqlite
+2. [ ] Broadcast
+3. [ ] Average votes
+
 * Network
 
 1. [ ] Client

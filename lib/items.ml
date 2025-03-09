@@ -119,7 +119,8 @@ let of_json j =
 let to_json items =
   `List (List.map Item.to_json items)
 
-let to_json_str items = Yojson.Basic.pretty_to_string (to_json items)
+let to_json_str items =
+  items |> to_json |> Yojson.Basic.pretty_to_string
 
 (* Cleanup the names *)
 

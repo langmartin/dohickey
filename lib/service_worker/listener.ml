@@ -4,3 +4,22 @@
    3. Answer requests from the client
    4. Push updates to the client
  *)
+
+open Js_of_ocaml
+
+let ev_table event =
+
+let add_listener event f =
+  let g = Js_of_ocaml__Js.Unsafe.global in
+  Dom.addEventListener g (Dom.Event.make event) f Js._false
+
+let the_store = ref Items.empty
+
+let h_fetch event =
+  let key = ev_table event in
+  let open Items.StringMap in
+  !the_store
+  |> to_list
+  |> Items.to_json_str
+
+let init () = ;
