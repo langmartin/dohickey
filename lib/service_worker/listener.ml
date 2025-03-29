@@ -7,19 +7,13 @@
 
 open Js_of_ocaml
 
-let ev_table event =
-
 let add_listener event f =
   let g = Js_of_ocaml__Js.Unsafe.global in
   Dom.addEventListener g (Dom.Event.make event) f Js._false
 
 let the_store = ref Items.empty
 
-let h_fetch event =
-  let key = ev_table event in
-  let open Items.StringMap in
+let h_fetch =
   !the_store
-  |> to_list
+  |> Items.values
   |> Items.to_json_str
-
-let init () = ;

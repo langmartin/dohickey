@@ -80,6 +80,9 @@ module StringMap = Map.Make(String)
 type t = Item.t StringMap.t
 let empty : t = StringMap.empty
 
+let values t =
+  t |> StringMap.to_list |> List.map snd
+
 let put item m =
   let open StringMap in
   let key = Item.key item in

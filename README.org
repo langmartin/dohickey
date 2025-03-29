@@ -2,11 +2,19 @@
 
 ** Service Worker
 
+The service worker can store data locally and take care of resending
+failures. It allows the application to run offline.
+
 1. [ ] Connect with an open websocket
 2. [ ] Client request/response
 3. [ ] Push to client
 4. [ ] Local storage idempotently
 5. [ ] Resend everything for anti-entropy
+
+*** sw_of_ocaml
+
+I copied in some code from this [[https://github.com/derui/sw_of_ocaml][sw_of_ocaml]] repo, some of which is
+outdated in its types (?).
 
 ** Client
 

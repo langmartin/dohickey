@@ -3,7 +3,7 @@ open Js_of_ocaml
 let version = "1.0"
 
 class type installEvent = object
-  inherit Dom_html.event 
+  inherit Dom_html.event
 
   (* Wait install until successful callback. *)
   method waitUntil: 'a -> unit Js.meth
@@ -50,22 +50,25 @@ end
 let _Response : (Js.js_string Js.t -> _response Js.t) Js.constr = Js.Unsafe.global##_Response
 
 let () = ignore begin
-  let console = Console.console in
-  Service_worker.install (fun _ ->
-    let open Js in
-    console##log (string ("installed " ^ version)); _false) |> ignore;
+    let console = Console.console in
+    Service_worker.install (fun _ ->
+        let open Js in
+        console##log (string ("installed " ^ version));
+        _false)
+    |> ignore;
 
-  Service_worker.fetch (fun e ->
-    let url = Js.to_string e##request##url |> Url.url_of_string in
-    match url with
-    | None -> assert false
-    | Some url -> begin match url with
-      | Url.Http url | Url.Https url when url.Url.hu_path_string <> "" ->
-         let response = "You access to " ^ url.Url.hu_path_string in
-         let res = jsnew (_Response) ((Js.string response)) in
-         e##respondWith_response (res) |> ignore;
-      | _ -> e##default (e##request)
-    end;
-      Js._false
-  ) |> ignore;
-end
+    Service_worker.fetch (fun e ->
+        let req = e##request in
+        let url = req##url |> Js.to_string   |> Url.url_of_string in
+        match url with
+        | None -> assert false
+        | Some url -> begin match url with
+            | Url.Http url | Url.Https url when url.Url.hu_path_string <> "" ->
+              let response = "You access to " ^ url.Url.hu_path_string in
+              let res = jsnew (_Response) ((Js.string response)) in
+              e##respondWith_response (res) |> ignore;
+            | _ -> e##default (e##request)
+          end;
+          Js._false
+      ) |> ignore;
+  end
