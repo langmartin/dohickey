@@ -7,7 +7,7 @@ let broadcast items =
   |> List.of_seq
   |> Lwt_list.iter_p
     (fun client ->
-      Dream.send client (Items.to_json_str items))
+      Dream.send client (Json.to_json_str items))
 
 let add_client websocket =
   let id = (Hashtbl.length the_clients) + 1 in

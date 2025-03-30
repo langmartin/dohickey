@@ -18,7 +18,7 @@ let js content =
 let handle_items table items =
   items
   |> Yojson.Safe.from_string
-  |> Items.of_json
+  |> Json.of_json
   |> World.puts table
 
 let handle_client table websocket =
