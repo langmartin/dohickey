@@ -1,5 +1,4 @@
 module StringMap = Map.Make(String)
-
 type items = Item.t StringMap.t
 
 type t = {
@@ -7,7 +6,9 @@ type t = {
   items: items
 }
 
-let empty = {id = ""; items = StringMap.empty;}
+let empty = {id = ""; items = StringMap.empty}
+
+let make id = {empty with id = id}
 
 let values t =
   t.items |> StringMap.to_list |> List.map snd
