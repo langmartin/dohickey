@@ -61,3 +61,7 @@ outdated in its types (?). I couldn't get it working and I found a
   but =utop= can't load the =js_of_ocaml= library, it doesn't have
   the JS runtime primitives. Only add those dependencies to the
   =dune= files in the JS specific executable sources.
+
+- Common libraries :: =utop= really only wants to load the stuff in
+  =lib=, so the common code is loaded by that, and =lib= implements
+  the server. There may be a better way to organize it.

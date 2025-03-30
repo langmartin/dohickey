@@ -2,5 +2,5 @@ _build
 dohickey.opam
 .DS_Store
 /tmp
-/server/scratch.ml
+/lib/scratch.ml
 /static/*.js
