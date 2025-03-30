@@ -1,6 +1,6 @@
 sources = $(wildcard lib/*.ml* lib/*/*.ml* bin/*.ml js_*/*.ml*)
 
-build_static: build static/js_client static/js_service_worker
+build_all: build static/js_client static/js_service_worker
 
 build: $(sources) Makefile
 	dune build
@@ -15,4 +15,4 @@ deps:
 $(HOME)/.opam/default/bin/dune:
 	opam install dune
 
-.PHONEY: build deps
+.PHONEY: build_all build deps
