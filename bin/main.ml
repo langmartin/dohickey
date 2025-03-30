@@ -5,7 +5,8 @@ let start listen data =
     | ip :: _ -> (ip, "8080")
     | [] -> ("127.0.0.1", "8080")
     in
-    let _ = Dohickey.Ht_server.start_server ip (int_of_string port) in
+    let open Dohickey_server.Ht_server in
+    let _ = start_server ip (int_of_string port) in
     `Ok (Printf.printf "starting")
   else
     `Error (false, "data directory must exist")

@@ -1,0 +1,4 @@
+(library
+ (name dohickey))
+
+(include_subdirs qualified)
