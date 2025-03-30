@@ -1,5 +1,5 @@
 (library
- (name dohickey)
+ (name dohickey_server)
  (libraries yojson dream sqlite3)
  (preprocess
   (pps ppx_blob lwt_ppx))
