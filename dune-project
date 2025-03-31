@@ -11,7 +11,7 @@
 
 (maintainers "Maintainer Name")
 
-(license LICENSE)
+(license "AGPL-3.0-or-later")
 
 (documentation https://url/to/documentation)
 
