@@ -1,15 +1,4 @@
 (library
- (name dohickey_server)
-
- (libraries yojson dream sqlite3 dohickey)
-
- (preprocess
-  (pps ppx_blob lwt_ppx))
-
- (preprocessor_deps
-  (file ../public/index.html)
-  (file ../public/sign-in.html)
-  (file ../public/table.html)
-  (file ../public/page.js)))
+ (name dohickey))
 
 (include_subdirs qualified)
