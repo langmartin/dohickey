@@ -1,4 +1,7 @@
 (library
- (name dohickey))
+ (name dohickey)
+ (libraries
+  base64
+  unix))
 
 (include_subdirs qualified)

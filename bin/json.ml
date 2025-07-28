@@ -34,7 +34,7 @@ let item_of_json j =
                         text = j |> member "text" |> to_string}
       | "vote" -> Vote (vote_of_json j)
       | "call" -> Call {id = j |> member "id" |> to_string}
-      | "stop" -> Stop {id = j |> member "id" |> to_string}
+      | "count" -> Count {id = j |> member "id" |> to_string}
       | "result" -> Result (vote_of_json j)
       | _ -> raise Invalid_type
   }
@@ -45,7 +45,7 @@ let item_to_json (i : Dohickey.Item.t) =
     | Vote i -> vote_to_json i
     | Result i -> vote_to_json i
     | Call i -> `Assoc [("id", `String i.id)]
-    | Stop i -> `Assoc [("id", `String i.id)]
+    | Count i -> `Assoc [("id", `String i.id)]
   in
   `Assoc [("coda", coda_to_json i.coda); ("body", j)]
 

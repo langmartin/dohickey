@@ -42,39 +42,45 @@ let puts items t =
   let m, fresh = put_items items t.items in
   ({t with items = m}, fresh)
 
-exception EmptyList
+let dims t =
+  let max_dims _key item dims =
+    let open Item in
+    let (r, c) = dims in
+    match item.body with
+    | Text i -> (max r i.row, max c i.col)
+    | _ -> dims
+  in
+  StringMap.fold max_dims t.items (0, 0)
 
-let to_node_id (items : Item.t list) =
-  match items with
-  | [] -> raise EmptyList
-  | item :: _ ->
-    match String.split_on_char '-' item.coda.time with
-    | _time :: node_id :: [] -> node_id
-    | _ -> raise EmptyList
+let get_votes t =
+  let open List in
+  t.items
+  |> StringMap.to_list
+  |> map snd
+  |> filter Item.is_vote
 
-(* Cleanup the names *)
+let comp_pos x y =
+  compare (Item.pos_of x) (Item.pos_of y)
 
-let upper_ascii = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-let lower_ascii = "abcdefghijklmnopqrstuvwxyz"
-let numeric = "0123456789"
-let other_ascii = "_-"
+let group_votes t =
+  let votes = get_votes t |> List.sort comp_pos in
+  let grp x y = Item.pos_of x == Item.pos_of y in
+  let rec lp xs =
+    match xs with
+    | [] -> [[]]
+    | x :: _ ->
+      let g = List.take_while (grp x) xs in
+      let tail = List.drop_while (grp x) xs in
+      g :: (lp tail)
+  in
+  lp votes
 
-let safe_char c =
-  if String.contains upper_ascii c ||
-     String.contains lower_ascii c ||
-     String.contains numeric c ||
-     String.contains other_ascii c
-  then
-    c
-  else if c = ' ' then
-    '-'
-  else
-    ' '
+let is_pos n = n > -1
 
-let dohickey_name input =
-  input
-  |> String.lowercase_ascii
-  |> String.map safe_char
-  |> String.split_on_char ' '
-  |> List.filter (fun s -> String.length s <> 0)
-  |> String.concat ""
+(*
+ * let count_grp xs =
+ *   let open List in
+ *   let rs = xs |> map Item.rank_of |> filter (( > ) 0) in
+ *   let sum = List.fold_left ( + ) 0 rs in
+ *   Int.div sum List.length rs
+ *)
