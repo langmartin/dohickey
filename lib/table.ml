@@ -77,10 +77,8 @@ let group_votes t =
 
 let is_pos n = n > -1
 
-(*
- * let count_grp xs =
- *   let open List in
- *   let rs = xs |> map Item.rank_of |> filter (( > ) 0) in
- *   let sum = List.fold_left ( + ) 0 rs in
- *   Int.div sum List.length rs
- *)
+let count_grp xs =
+  let open List in
+  let rs = xs |> map Item.rank_of |> filter is_pos in
+  let sum = List.fold_left ( + ) 0 rs in
+  Int.div sum (length rs)
