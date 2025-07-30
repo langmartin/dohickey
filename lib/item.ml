@@ -33,3 +33,9 @@ let rank_of item =
   | Vote i -> i.rank
   | Result i -> i.rank
   | _ -> -1
+
+let id_of item =
+  match item.body with
+  | Vote i -> i.id
+  | Result i -> i.id
+  | _ -> ""

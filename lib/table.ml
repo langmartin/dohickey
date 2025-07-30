@@ -82,3 +82,25 @@ let count_grp xs =
   let rs = xs |> map Item.rank_of |> filter is_pos in
   let sum = List.fold_left ( + ) 0 rs in
   Int.div sum (length rs)
+
+let result_of_grp time user grp =
+  match grp with
+  | [] -> None
+  | x :: _ ->
+    let id = Item.id_of x in
+    let (row, col) = Item.pos_of x in
+    let rank = count_grp grp in
+    let open Item in
+    Some {
+    coda = {time; user};
+    body = Item.Result{row; col; rank; id = id}
+  }
+
+let make_results time user t =
+  let open List in
+  t
+  |> group_votes
+  |> map (result_of_grp time user)
+  |> map Option.to_list
+  |> filter (fun xs -> (length xs) > 0)
+  |> map hd
