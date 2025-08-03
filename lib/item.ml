@@ -7,14 +7,22 @@ type body =
 
 type t = {coda: Coda.t; body: body}
 
+let key_pos word row col = [word; Int.to_string row; Int.to_string col] |> String.concat "-"
+let key_id word id = [word; id] |> String.concat "-"
+
+let key_text = key_pos "text"
+let key_vote = key_pos "vote"
+let key_result = key_pos "result"
+let key_call = key_id "call"
+let key_count = key_id "count"
+
 let key item =
-  let open Format in
   match item.body with
-  | Text item -> sprintf "text-%d%d" item.row item.col
-  | Vote item -> sprintf "vote-%d%d" item.row item.col
-  | Result item -> sprintf "result-%d%d" item.row item.col
-  | Call item -> sprintf "call-%s" item.id
-  | Count item -> sprintf "count-%s" item.id
+  | Text item -> key_text item.row item.col
+  | Vote item -> key_vote item.row item.col
+  | Result item -> key_result item.row item.col
+  | Call item -> key_call item.id
+  | Count item -> key_count item.id
 
 let is_vote item =
   match item.body with

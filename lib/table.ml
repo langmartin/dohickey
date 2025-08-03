@@ -52,6 +52,15 @@ let dims t =
   in
   StringMap.fold max_dims t.items (0, 0)
 
+let get_pos kind row col t =
+  let key = Item.key_pos kind row col in
+  StringMap.find_opt key t.items
+
+(*
+ * let get_text row col t = get_pos "text"
+ * let get_vote row col t = get_pos "vote"
+ *)
+
 let get_votes t =
   let open List in
   t.items
