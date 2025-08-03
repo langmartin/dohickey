@@ -62,8 +62,7 @@ let get_votes t =
 let comp_pos x y =
   compare (Item.pos_of x) (Item.pos_of y)
 
-let group_votes t =
-  let votes = get_votes t |> List.sort comp_pos in
+let group_votes votes =
   let grp x y = Item.pos_of x == Item.pos_of y in
   let rec lp xs =
     match xs with
@@ -87,20 +86,20 @@ let result_of_grp time user grp =
   match grp with
   | [] -> None
   | x :: _ ->
-    let id = Item.id_of x in
-    let (row, col) = Item.pos_of x in
-    let rank = count_grp grp in
     let open Item in
-    Some {
-    coda = {time; user};
-    body = Item.Result{row; col; rank; id = id}
-  }
+    let id = id_of x in
+    let (row, col) = pos_of x in
+    let rank = count_grp grp in
+    let body = Result{row; col; rank; id = id} in
+    Some {coda = {time; user}; body}
 
-let make_results time user t =
+let make_results time user vote_id t =
   let open List in
   t
+  |> get_votes
+  |> filter (fun v -> vote_id = Item.id_of v)
+  |> sort comp_pos
   |> group_votes
   |> map (result_of_grp time user)
-  |> map Option.to_list
-  |> filter (fun xs -> (length xs) > 0)
-  |> map hd
+  |> filter Option.is_some
+  |> map Option.get

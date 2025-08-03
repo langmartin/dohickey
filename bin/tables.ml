@@ -8,7 +8,6 @@ let get table store =
   | Some items -> items
 
 let puts table items store =
-  let open Dohickey.Table in
-  let itemm = get table store in
-  let (itemm', items') = puts items itemm in
+  let tab = get table store in
+  let (itemm', items') = Dohickey.Table.puts items tab in
   (StringMap.add table itemm' store, items')

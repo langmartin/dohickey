@@ -17,7 +17,7 @@ let send system local =
   {
     time = logical;
     tick =
-      if logical == local.time then
+      if logical = local.time then
         local.tick + 1
       else
         0
@@ -29,9 +29,9 @@ let recv system local remote =
   {
     time = logical;
     tick =
-      if logical == remote.time then
+      if logical = remote.time then
         remote.tick + 1
-      else if logical == local.time then
+      else if logical = local.time then
         local.tick + 1
       else
         0
