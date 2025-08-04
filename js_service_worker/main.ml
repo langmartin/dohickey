@@ -6,14 +6,12 @@ open Dohickey
 type t = {
   mutable table : Jstr.t;
   mutable ws : Websocket.t option;
-  mutable user : Jstr.t;
   mutable data : Table.t
 }
 
 let state = {
   table = Jstr.empty;
   ws = None;
-  user = Jstr.empty;
   data = Table.empty
 }
 
@@ -29,7 +27,7 @@ let send item =
   | None -> ()
 
 let jsint key data =
-  Jv.Jstr.get data "row"
+  Jv.Jstr.get data key
   |> Jstr.to_int
   |> Option.get
 
@@ -40,20 +38,26 @@ let post_item kind row col =
   | None ->
     Worker.G.post Jv.null
 
+let recv_from_ws e =
+  let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
+  let item = Jv_item.of_jv jv in
+  match item with
+  | Some item ->
+    let data = Table.put item state.data in
+    state.data <- data
+  | None -> ()
+
 let recv_from_page e =
   let data = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
   let path = Jv.Jstr.get data "path" |> Jstr.to_string in
   match path with
-  | "user" ->
-    let body = Jv.Jstr.get data "body" in
-    state.user <- body
-
   | "table" ->
     let body = Jv.Jstr.get data "body" in
     state.table <- body
 
   | "connect" ->
     let ws = Websocket.create Jstr.(v "/a1/socket/" + state.table) in
+    ignore (Ev.listen Message.Ev.message recv_from_ws (Websocket.as_target ws));
     state.ws <- Some ws
 
   | "text" | "vote" ->
