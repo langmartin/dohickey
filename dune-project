@@ -23,14 +23,14 @@
           base64
           brr
           dream
+          dune
           js_of_ocaml
           js_of_ocaml-ppx
+          jsont
+          ocaml
           ppx_blob
           sqlite3
-          yojson
-          dune
-          ocaml
-          unix)
+          yojson)
  (tags
   (topics "to describe" your project)))
 
