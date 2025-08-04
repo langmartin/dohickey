@@ -3,4 +3,4 @@
  (modes js)
  (preprocess
   (pps js_of_ocaml-ppx))
- (libraries dohickey brr))
+ (libraries brr dohickey js_common))

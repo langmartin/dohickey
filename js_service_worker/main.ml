@@ -2,6 +2,7 @@ open Brr
 open Brr_io
 open Brr_webworkers
 open Dohickey
+open Js_common
 
 type t = {
   mutable table : Jstr.t;
