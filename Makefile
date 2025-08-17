@@ -12,7 +12,11 @@ deps:
 	dune build || true
 	opam install . --deps-only
 
+user:
+	opam install -y merlin ocp-indent utop
+	opam user-setup install
+
 $(HOME)/.opam/default/bin/dune:
 	opam install dune
 
-.PHONEY: build_all build deps
+.PHONEY: build_all build deps user

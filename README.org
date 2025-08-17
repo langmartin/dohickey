@@ -5,9 +5,8 @@
 The service worker can store data locally and take care of resending
 failures. It allows the application to run offline.
 
-1. [ ] Connect with an open websocket
-2. [ ] Client request/response
-3. [ ] Push to client
+1. [X] Connect with an open websocket
+2. [X] Client request/response
 4. [ ] Local storage idempotently
 5. [ ] Resend everything for anti-entropy
 
@@ -21,6 +20,14 @@ outdated in its types (?). I couldn't get it working and I found a
 
 1. [ ] Query service worker
 2. [ ] Update handler
+
+** js_common
+
+1. [X] Did jv_item on the plane to convert dohickey types to
+   javascript types, I think I missed a trick about deriving that
+   produces this stuff automatically.
+
+2. [ ] https://erratique.ch/software/jsont/doc/
 
 ** Server
 

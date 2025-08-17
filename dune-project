@@ -27,7 +27,7 @@
           js_of_ocaml
           js_of_ocaml-ppx
           jsont
-          ocaml
+          (ocaml (>= 5.3.0))
           ppx_blob
           sqlite3
           yojson)
