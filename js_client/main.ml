@@ -12,8 +12,8 @@ let recv_from_worker e =
   let req = Js_common.Req.of_jv data in
   match req.body with
   | Some (Dims (row, col)) -> Draw.dims (row, col)
-  | Some Item _item -> []
-  | None -> []
+  | Some Item item -> Draw.item item
+  | None -> ()
 
 let main () =
   let h1 = El.h1 [El.txt' "Test workers"] in

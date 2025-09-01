@@ -1,7 +1,11 @@
+type text_body = {row: int; col: int; text: string}
+
+type call_body = {id: string}
+
 type body =
-  | Text of {row: int; col: int; text: string}
-  | Call of {id: string}
-  | Count of {id: string}
+  | Text of text_body
+  | Call of call_body
+  | Count of call_body
   | Vote of Vote.t
   | Result of Vote.t
 

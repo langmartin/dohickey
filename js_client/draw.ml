@@ -50,3 +50,48 @@ let dims (row, col) =
   let cn = cols() |> len in
   sync_rows (row - rn) col;
   sync_cols (col - cn)
+  |> ignore
+
+let rec each f xs =
+  match xs with
+  | [] -> ();
+  | x :: xs -> f x; each f xs
+
+let replace_children el kids =
+  el
+  |> El.children
+  |> each El.remove;
+  El.append_children el kids
+
+let item_text (body : Dohickey.Item.text_body) =
+  let open Dohickey.Item in
+  let id = key_text body.row body.col in
+  let el = qs id in
+  Jv.call el "textContent" [| (Jv.of_string body.text) |]
+  |> ignore
+
+let table() =
+  match El.find_first_by_selector (Jstr.of_string "#dohickey") with
+  | Some el -> el
+  | None -> raise (Invalid_argument "document")
+
+let item_call ?(visible=true) (body : Dohickey.Item.call_body) =
+  let tb = table() in
+  El.fold_find_by_selector
+    ~root:tb
+    (fun el _ ->
+       El.set_class (Jstr.of_string "voting") visible el;
+       El.set_at
+         (Jstr.of_string "data-call")
+         (Some (Jstr.of_string body.id))
+         el;)
+    (Jstr.of_string ".ballot-box")
+    ()
+
+let item (item : Dohickey.Item.t) =
+  match item.body with
+  | Text it -> item_text it
+  | Call it -> item_call it
+  | Count it -> item_call ~visible:false it
+  | Vote _it -> ()
+  | Result _it -> ()
