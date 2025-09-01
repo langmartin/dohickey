@@ -1,7 +1,8 @@
 (*
 
-   The service worker receives incoming messages and turns sends them
-   as messages to us, on the client. These receivers draw the updates.
+   The service worker receives incoming messages and in turn sends
+   them as messages to us, the client. These receivers draw the
+   updates.
 
 *)
 
@@ -28,6 +29,7 @@ let vote_btn dir =
   let btn = El.button [El.txt' dir] in
   btn
 
+(* TODO: on_click event handler that sends a vote *)
 let vote_ctx row col =
   let el = El.div ~at:[At.hidden]
       [vote_btn "+"; vote_btn "-"] in
@@ -37,6 +39,10 @@ let vote_ctx row col =
   El.set_at (Jstr.v "data-col") (Some (Jstr.of_int col)) el;
   el
 
+(*
+   TODO: contenteditable(?) and event handler to send text.
+   Also send "typing..."
+*)
 let dh_td row col =
   let id = Dohickey.Item.key_text row col in
   El.td ~at:[(At.id (Jstr.v id))]
@@ -65,30 +71,10 @@ let sync_rows n ncols =
   let rows = repeatedly (row_el ncols) n in
   El.append_children tb rows
 
-(* Received event handlers *)
-
-let dims (row, col) =
-  let rn = rows() |> len in
-  let cn = cols() |> len in
-  sync_rows (row - rn) col;
-  sync_cols (col - cn)
-  |> ignore
-
-let rec each f xs =
-  match xs with
-  | [] -> ();
-  | x :: xs -> f x; each f xs
-
-let replace_children el kids =
-  el
-  |> El.children
-  |> each El.remove;
-  El.append_children el kids
-
 let item_text (body : Dohickey.Item.text_body) =
   let open Dohickey.Item in
   let id = key_text body.row body.col in
-  let el = qs id in
+  let el = ["#"; id; " .content"] |> String.concat "" |> qs in
   Jv.call el "textContent" [| (Jv.of_string body.text) |]
   |> ignore
 
@@ -98,9 +84,8 @@ let table() =
   | None -> raise (Invalid_argument "document")
 
 let item_call ?(visible=true) (body : Dohickey.Item.call_body) =
-  let tb = table() in
   El.fold_find_by_selector
-    ~root:tb
+    ~root:(table())
     (fun el _ ->
        El.set_class (Jstr.of_string "voting") visible el;
        El.set_at
@@ -109,6 +94,18 @@ let item_call ?(visible=true) (body : Dohickey.Item.call_body) =
          el;)
     (Jstr.of_string ".ballot-box")
     ()
+
+(*
+   ======================================================================
+   Received event handlers
+*)
+
+let dims (row, col) =
+  let rn = rows() |> len in
+  let cn = cols() |> len in
+  sync_rows (row - rn) col;
+  sync_cols (col - cn)
+  |> ignore
 
 let item (item : Dohickey.Item.t) =
   match item.body with
