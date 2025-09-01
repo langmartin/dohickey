@@ -17,31 +17,53 @@ let len jv =
 let rows() = qs "#dohickey tbody tr"
 let cols() = qs "#dohickey tbody tr:first-child td"
 
-let make_xs x n =
+let repeatedly f n =
   let open Seq in
-  repeat x
+  repeat f
   |> take n
-  |> map (fun f -> f())
+  |> mapi (fun i f -> f i)
   |> List.of_seq
 
-let row_el ncols =
-  let elf = (fun () -> El.td []) in
-  let tds = make_xs elf ncols in
+let vote_btn dir =
+  let btn = El.button [El.txt' dir] in
+  btn
+
+let vote_ctx row col =
+  let el = El.div ~at:[At.hidden]
+      [vote_btn "+"; vote_btn "-"] in
+  El.set_class (Jstr.v "voting") false el;
+  El.set_class (Jstr.v "ballot-box") true el;
+  El.set_at (Jstr.v "data-row") (Some (Jstr.of_int row)) el;
+  El.set_at (Jstr.v "data-col") (Some (Jstr.of_int col)) el;
+  el
+
+let dh_td row col =
+  let id = Dohickey.Item.key_text row col in
+  El.td ~at:[(At.id (Jstr.v id))]
+    [vote_ctx row col;
+     El.div ~at:[(At.class' (Jstr.v "content"))]
+       [El.txt' ""]]
+
+let sync_cols n =
+  let open List in
+  rows()
+  |> Jv.to_list El.of_jv
+  |> mapi (fun row tr ->
+      repeatedly
+        (fun col ->
+           [dh_td row col]
+           |> El.append_children tr)
+        n)
+
+let row_el ncols row =
+  let elf = dh_td row in
+  let tds = repeatedly elf ncols in
   El.tr tds
 
 let sync_rows n ncols =
   let tb = qs "#dohickey tbody" |> El.of_jv in
-  let rows = make_xs (fun () -> row_el ncols) n in
+  let rows = repeatedly (row_el ncols) n in
   El.append_children tb rows
-
-let sync_cols n =
-  let open List in
-  let tdf = (fun () -> El.td []) in
-  rows()
-  |> Jv.to_list El.of_jv
-  |> map (fun tr ->
-      make_xs tdf n
-      |> El.append_children tr)
 
 (* Received event handlers *)
 
