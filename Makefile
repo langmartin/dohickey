@@ -5,7 +5,13 @@ build_all: build static/js_client static/js_service_worker
 build: $(sources) Makefile
 	dune build
 
-static/%: build
+# https://discuss.ocaml.org/t/js-of-ocaml-output-performs-considerably-worse-when-built-with-profile-release-flag/8862/15
+release: $(sources) Makefile
+	dune build --profile=release
+
+release_all: release static/js_client static/js_service_worker
+
+static/%:
 	cp -f _build/default/$*/main.bc.js static/$*.js
 
 deps:
@@ -19,4 +25,4 @@ user:
 $(HOME)/.opam/default/bin/dune:
 	opam install dune
 
-.PHONEY: build_all build deps user
+.PHONEY: build_all build deps user release release_all
