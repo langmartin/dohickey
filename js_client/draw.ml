@@ -40,6 +40,42 @@ let vote_ctx row col =
   el
 
 (*
+let add_ev_listener event f el =
+  let el = El.to_jv el in
+  let f = Jv.callback ~arity:1 f in
+  let event = Jv.of_string event in
+  ignore @@ Jv.call el "addEventListener" [| event; f |];
+  el
+*)
+
+let event_el event = event |> Ev.target |> Ev.target_to_jv |> El.of_jv
+
+let add_ev_listener event f el =
+  let trg = El.as_target el in
+  (* Save this value so we can detatch listeners? *)
+  ignore @@ Ev.listen event f trg;
+  el
+
+let send_text e =
+  let el = event_el e in
+  let text = el |> El.text_content |> Jstr.to_string in
+  Send.text 0 0 text
+
+let editable txt =
+  El.textarea
+    [El.txt txt]
+  |> add_ev_listener Ev.focusout send_text
+
+let lemme_edit e =
+  let el = Ev.target e |> Ev.target_to_jv |> El.of_jv in
+  match El.find_first_by_selector ~root:el (Jstr.v ".content") with
+  | None -> ()
+  | Some ct ->
+    let txt = El.text_content ct in
+    El.set_children ct
+      [editable txt]
+
+(*
    TODO: contenteditable(?) and event handler to send text.
    Also send "typing..."
 *)
@@ -49,6 +85,7 @@ let dh_td row col =
     [vote_ctx row col;
      El.div ~at:[(At.class' (Jstr.v "content"))]
        [El.txt' ""]]
+  |> add_ev_listener Ev.click lemme_edit
 
 let sync_cols n =
   let open List in
