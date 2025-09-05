@@ -8,15 +8,16 @@
 
 open Brr
 
-let qs querySelector =
-  let o = Document.to_jv G.document in
-  Jv.call o "querySelectorAll" [| (Jv.of_string querySelector) |]
+let document_el = G.document |> Document.to_jv |> El.of_jv
 
-let len jv =
-  Jv.call jv "length" [||] |> Jv.to_int
+let qsa ?(el=document_el) querySelector =
+  let o = El.to_jv el in
+  [| (Jv.of_string querySelector) |]
+  |> Jv.call o "querySelectorAll"
+  |> Jv.to_list El.of_jv
 
-let rows() = qs "#dohickey tbody tr"
-let cols() = qs "#dohickey tbody tr:first-child td"
+let rows() = qsa "#dohickey tbody tr"
+let cols() = qsa "#dohickey tbody tr:first-child td"
 
 let repeatedly f n =
   let open Seq in
@@ -39,22 +40,14 @@ let vote_ctx row col =
   El.set_at (Jstr.v "data-col") (Some (Jstr.of_int col)) el;
   el
 
-(*
-let add_ev_listener event f el =
-  let el = El.to_jv el in
-  let f = Jv.callback ~arity:1 f in
-  let event = Jv.of_string event in
-  ignore @@ Jv.call el "addEventListener" [| event; f |];
-  el
-*)
-
-let event_el event = event |> Ev.target |> Ev.target_to_jv |> El.of_jv
-
 let add_ev_listener event f el =
   let trg = El.as_target el in
   (* Save this value so we can detatch listeners? *)
   ignore @@ Ev.listen event f trg;
   el
+
+let event_el event =
+  event |> Ev.target |> Ev.target_to_jv |> El.of_jv
 
 let send_text e =
   let el = event_el e in
@@ -90,7 +83,6 @@ let dh_td row col =
 let sync_cols n =
   let open List in
   rows()
-  |> Jv.to_list El.of_jv
   |> mapi (fun row tr ->
       repeatedly
         (fun col ->
@@ -104,16 +96,19 @@ let row_el ncols row =
   El.tr tds
 
 let sync_rows n ncols =
-  let tb = qs "#dohickey tbody" |> El.of_jv in
-  let rows = repeatedly (row_el ncols) n in
-  El.append_children tb rows
+  match qsa "#dohickey tbody" with
+  | [tb] -> repeatedly (row_el ncols) n |> El.append_children tb
+  | _ -> ()
 
 let item_text (body : Dohickey.Item.text_body) =
   let open Dohickey.Item in
   let id = key_text body.row body.col in
-  let el = ["#"; id; " .content"] |> String.concat "" |> qs in
-  Jv.call el "textContent" [| (Jv.of_string body.text) |]
-  |> ignore
+  let els = ["#"; id; " .content"] |> String.concat "" |> qsa in
+  match els with
+  | [el] ->
+    let el = El.to_jv el in
+    ignore @@ Jv.call el "textContent" [| (Jv.of_string body.text) |]
+  | _ -> ()
 
 let table() =
   match El.find_first_by_selector (Jstr.of_string "#dohickey") with
@@ -138,11 +133,10 @@ let item_call ?(visible=true) (body : Dohickey.Item.call_body) =
 *)
 
 let dims (row, col) =
-  let rn = rows() |> len in
-  let cn = cols() |> len in
+  let rn = rows() |> List.length in
+  let cn = cols() |> List.length in
   sync_rows (row - rn) col;
-  sync_cols (col - cn)
-  |> ignore
+  ignore @@ sync_cols (col - cn)
 
 let item (item : Dohickey.Item.t) =
   match item.body with
