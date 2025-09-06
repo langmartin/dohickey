@@ -49,10 +49,31 @@ let add_ev_listener event f el =
 let event_el event =
   event |> Ev.target |> Ev.target_to_jv |> El.of_jv
 
+let rec find_td el =
+  match El.parent el with
+  | None -> None
+  | Some el ->
+    let tag = el |> El.tag_name |> Jstr.to_string in
+    if tag = "td" then
+      Some el
+    else
+      find_td el
+
+let at_id td =
+  match El.at (Jstr.v "id") td with
+  | None -> None
+  | Some id -> Some (Jstr.to_string id)
+
 let send_text e =
   let el = event_el e in
   let text = el |> El.text_content |> Jstr.to_string in
-  Send.text 0 0 text
+  (* Like piping each step with |> Option.bind but using fancy syntax *)
+  let (>>=) = Option.bind in
+  find_td el
+  >>= at_id
+  >>= (Dohickey.Item.parse_pos "text")
+  >>= (fun {row=r ; col=c; _} -> Some (Send.text r c text))
+  |> ignore
 
 let editable txt =
   El.textarea

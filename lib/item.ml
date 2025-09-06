@@ -20,6 +20,13 @@ let key_result = key_pos "result"
 let key_call = key_id "call"
 let key_count = key_id "count"
 
+let parse_pos word key =
+  match key |> String.split_on_char '-' with
+  | [pfix; row; col] when pfix = word ->
+    Some {row = int_of_string row; col = int_of_string col; text = ""}
+  | _ ->
+    None
+
 let key item =
   match item.body with
   | Text item -> key_text item.row item.col
