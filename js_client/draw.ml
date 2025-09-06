@@ -72,7 +72,7 @@ let send_text e =
   find_td el
   >>= at_id
   >>= (Dohickey.Item.parse_pos "text")
-  >>= (fun {row=r ; col=c; _} -> Some (Send.text r c text))
+  >>= (fun {row; col; _} -> Some (Send.text row col text))
   |> ignore
 
 let editable txt =
