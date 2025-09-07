@@ -25,6 +25,7 @@ let main () =
   match spawn_worker () with
   | Error e -> El.set_children view [El.p El.[txt (Jv.Error.message e)]]
   | Ok w ->
+    Send.set_worker w;
     let msg = Ev.next Message.Ev.message (Worker.as_target w) in
     let _ = Fut.map (recv_from_worker) msg in
     Worker.post w (Jstr.v "Work!");

@@ -1,12 +1,19 @@
-let item item =
+open Brr_webworkers
+
+let the_worker = ref (Worker.of_jv Jv.null)
+
+let worker = !the_worker
+let set_worker w = the_worker := w
+
+let post_item item =
   let open Js_common.Req in
   let body = Some (Item item) in
   let req = {path = "item"; body} in
   let jv = to_jv req in
-  ignore jv
+  Worker.post (worker) jv
 
-let text row col text =
+let text text_body =
   let open Dohickey in
-  let body = Item.Text {row; col; text} in
   let coda = Coda.empty in
-  item {coda; body}
+  let body = Item.Text text_body in
+  post_item {coda; body}
