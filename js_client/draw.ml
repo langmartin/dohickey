@@ -26,10 +26,6 @@ let repeatedly f n =
   |> mapi (fun i f -> f i)
   |> List.of_seq
 
-let vote_btn dir =
-  let btn = El.button [El.txt' dir] in
-  btn
-
 let set_classes el xs =
   List.fold_left (fun _ (c, yes) ->
       El.set_class (Jstr.v c) yes el)
@@ -50,23 +46,26 @@ let set_attrs el xs =
     ()
     xs
 
-(* TODO: on_click event handler that sends a vote *)
-let vote_ctx row col =
-  let el = El.div ~at:[At.hidden]
-      [vote_btn "+"; vote_btn "-"] in
-  [("voting", false); ("ballot-box", true);]
-  |> set_classes el;
-
-  [("data-row", Int row); ("data-col", Int col)]
-  |> set_attrs el;
-
-  el
+let get_attrs el xs =
+  List.map (fun x ->
+      let v = el
+              |> El.at (Jstr.of_string x)
+              |> Option.value ~default:Jstr.empty
+              |> Jstr.to_string in
+      (x, v))
+    xs
 
 let add_ev_listener event f el =
   let trg = El.as_target el in
   (* Save this value so we can detatch listeners? *)
   ignore @@ Ev.listen event f trg;
   el
+
+(*
+   Find the event context
+*)
+
+let (>>=) = Option.bind
 
 let event_el event =
   event |> Ev.target |> Ev.target_to_jv |> El.of_jv
@@ -85,6 +84,62 @@ let at_id td =
   match El.at (Jstr.v "id") td with
   | None -> None
   | Some id -> Some (Jstr.to_string id)
+
+(*
+   Voting.
+*)
+
+let at_int prop el =
+  match El.at (Jstr.v prop) el with
+  | Some s -> int_of_string (Jstr.to_string s)
+  | None -> -1
+
+let at_str prop el =
+  match El.at (Jstr.v prop) el with
+  | Some s -> Jstr.to_string s
+  | None -> ""
+
+let btn_rank el =
+  let txt = El.text_content el |> Jstr.to_string in
+  if txt = "+" then 1 else -1
+
+let at_vote btn el =
+  let row = at_int "data-row" el in
+  let col = at_int "data-col" el in
+  let id = at_str "data-id" el in
+  let rank = btn_rank btn in
+  let open Dohickey.Vote in
+  {row; col; id; rank}
+
+let send_vote ev =
+  let open Fun in
+  let open Option in
+  let btn = event_el ev in
+  btn
+  |> El.parent
+  >>= compose some (at_vote btn)
+  >>= compose some Send.vote
+  |> ignore
+
+let vote_btn dir =
+  El.button [El.txt' dir]
+  |> add_ev_listener Ev.click send_vote
+
+(* TODO: on_click event handler that sends a vote *)
+let vote_ctx row col =
+  let el = El.div ~at:[At.hidden]
+      [vote_btn "+"; vote_btn "-"] in
+  [("voting", false); ("ballot-box", true)]
+  |> set_classes el;
+
+  [("data-row", Int row); ("data-col", Int col)]
+  |> set_attrs el;
+
+  el
+
+(*
+   Text
+*)
 
 let send_text e =
   let el = event_el e in
@@ -122,6 +177,10 @@ let dh_td row col =
      El.div ~at:[(At.class' (Jstr.v "content"))]
        [El.txt' ""]]
   |> add_ev_listener Ev.click lemme_edit
+
+(*
+   Table
+*)
 
 let sync_cols n =
   let open List in
