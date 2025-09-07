@@ -30,14 +30,36 @@ let vote_btn dir =
   let btn = El.button [El.txt' dir] in
   btn
 
+let set_classes el xs =
+  List.fold_left (fun _ (c, yes) ->
+      El.set_class (Jstr.v c) yes el)
+    ()
+    xs
+
+type attr_v = Int of int | Str of string | Drop of bool
+
+let set_attrs el xs =
+  let at_v x = match x with
+    | Int x -> Some (Jstr.of_int x)
+    | Str x -> Some (Jstr.of_string x)
+    | Drop false -> None
+    | Drop true -> Some (Jstr.v "true")
+  in
+  List.fold_left (fun _ (c, v) ->
+      El.set_at (Jstr.v c) (at_v v) el)
+    ()
+    xs
+
 (* TODO: on_click event handler that sends a vote *)
 let vote_ctx row col =
   let el = El.div ~at:[At.hidden]
       [vote_btn "+"; vote_btn "-"] in
-  El.set_class (Jstr.v "voting") false el;
-  El.set_class (Jstr.v "ballot-box") true el;
-  El.set_at (Jstr.v "data-row") (Some (Jstr.of_int row)) el;
-  El.set_at (Jstr.v "data-col") (Some (Jstr.of_int col)) el;
+  [("voting", false); ("ballot-box", true);]
+  |> set_classes el;
+
+  [("data-row", Int row); ("data-col", Int col)]
+  |> set_attrs el;
+
   el
 
 let add_ev_listener event f el =
@@ -71,7 +93,7 @@ let send_text e =
   let (>>=) = Option.bind in
   find_td el
   >>= at_id
-  >>= (Dohickey.Item.parse_pos "text")
+  >>= Dohickey.Item.parse_pos "text"
   >>= (fun {row; col; _} -> Some (Send.text row col text))
   |> ignore
 
