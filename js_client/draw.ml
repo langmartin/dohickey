@@ -32,27 +32,17 @@ let set_classes el xs =
     ()
     xs
 
-type attr_v = Int of int | Str of string | Drop of bool
+type attr_v = Int of int | Str of string | Gone
 
 let set_attrs el xs =
   let at_v x = match x with
     | Int x -> Some (Jstr.of_int x)
     | Str x -> Some (Jstr.of_string x)
-    | Drop false -> None
-    | Drop true -> Some (Jstr.v "true")
+    | Gone -> None
   in
   List.fold_left (fun _ (c, v) ->
       El.set_at (Jstr.v c) (at_v v) el)
     ()
-    xs
-
-let get_attrs el xs =
-  List.map (fun x ->
-      let v = el
-              |> El.at (Jstr.of_string x)
-              |> Option.value ~default:Jstr.empty
-              |> Jstr.to_string in
-      (x, v))
     xs
 
 let add_ev_listener event f el =
@@ -64,8 +54,6 @@ let add_ev_listener event f el =
 (*
    Find the event context
 *)
-
-let (>>=) = Option.bind
 
 let event_el event =
   event |> Ev.target |> Ev.target_to_jv |> El.of_jv
@@ -106,20 +94,18 @@ let btn_rank el =
 let at_vote btn el =
   let row = at_int "data-row" el in
   let col = at_int "data-col" el in
-  let id = at_str "data-id" el in
+  let id = at_str "data-call" el in
   let rank = btn_rank btn in
   let open Dohickey.Vote in
   {row; col; id; rank}
 
 let send_vote ev =
-  let open Fun in
-  let open Option in
   let btn = event_el ev in
-  btn
-  |> El.parent
-  >>= compose some (at_vote btn)
-  >>= compose some Send.vote
-  |> ignore
+  match El.parent btn with
+  | None -> ()
+  | Some el ->
+    at_vote btn el
+    |> Send.vote
 
 let vote_btn dir =
   El.button [El.txt' dir]
@@ -131,11 +117,23 @@ let vote_ctx row col =
       [vote_btn "+"; vote_btn "-"] in
   [("voting", false); ("ballot-box", true)]
   |> set_classes el;
-
   [("data-row", Int row); ("data-col", Int col)]
   |> set_attrs el;
-
   el
+
+let call_one_vote id el =
+  set_classes el [("voting", true)];
+  set_attrs el [("data-call", Str id)]
+
+let end_one_vote el =
+  set_classes el [("voting", false)];
+  set_attrs el [("data-call", Gone)]
+
+let each f lst =
+  List.fold_left (fun _ x -> f x) () lst
+
+let call_vote id = qsa "#dohickey .ballot-box" |> each (call_one_vote id)
+let end_vote = qsa "#dohickey .ballot-box" |> each end_one_vote
 
 (*
    Text
@@ -212,22 +210,8 @@ let item_text (body : Dohickey.Item.text_body) =
     ignore @@ Jv.call el "textContent" [| (Jv.of_string body.text) |]
   | _ -> ()
 
-let table() =
-  match El.find_first_by_selector (Jstr.of_string "#dohickey") with
-  | Some el -> el
-  | None -> raise (Invalid_argument "document")
-
-let item_call ?(visible=true) (body : Dohickey.Item.call_body) =
-  El.fold_find_by_selector
-    ~root:(table())
-    (fun el _ ->
-       El.set_class (Jstr.of_string "voting") visible el;
-       El.set_at
-         (Jstr.of_string "data-call")
-         (Some (Jstr.of_string body.id))
-         el;)
-    (Jstr.of_string ".ballot-box")
-    ()
+let item_call (body : Dohickey.Item.call_body) = call_vote body.id
+let item_count () = end_vote
 
 (*
    ======================================================================
@@ -244,6 +228,6 @@ let item (item : Dohickey.Item.t) =
   match item.body with
   | Text it -> item_text it
   | Call it -> item_call it
-  | Count it -> item_call ~visible:false it
+  | Count _it -> item_count() (* TODO match the id? Maybe server already did *)
   | Vote _it -> ()
   | Result _it -> ()
