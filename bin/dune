@@ -1,5 +1,14 @@
 (executable
  (public_name dohickey)
  (name main)
- (libraries dohickey
-            cmdliner))
+
+ (libraries yojson dream sqlite3 cmdliner dohickey)
+
+ (preprocess
+  (pps ppx_blob lwt_ppx))
+
+ (preprocessor_deps
+  (file ../public/index.html)
+  (file ../public/sign-in.html)
+  (file ../public/table.html)
+  (file ../public/page.js)))

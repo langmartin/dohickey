@@ -1,0 +1,3 @@
+(library
+ (name js_common)
+ (libraries brr dohickey))

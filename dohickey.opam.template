@@ -1,0 +1,4 @@
+depexts: [
+  [ "sqlite" ]
+    { os-distribution = "macos" }
+]

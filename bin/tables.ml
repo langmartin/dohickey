@@ -1,14 +1,13 @@
 module StringMap = Map.Make(String)
-
-let empty : Items.t StringMap.t = StringMap.empty
+let empty : Dohickey.Table.t StringMap.t = StringMap.empty
 
 let get table store =
   let open StringMap in
   match find_opt table store with
-  | None -> Items.empty
+  | None -> Dohickey.Table.empty
   | Some items -> items
 
 let puts table items store =
-  let itemm = get table store in
-  let (itemm', items') = Items.puts items itemm in
+  let tab = get table store in
+  let (itemm', items') = Dohickey.Table.puts items tab in
   (StringMap.add table itemm' store, items')

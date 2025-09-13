@@ -1,3 +1,40 @@
+* Design
+
+** Service Worker
+
+The service worker can store data locally and take care of resending
+failures. It allows the application to run offline.
+
+1. [X] Connect with an open websocket
+2. [X] Client request/response
+4. [ ] Local storage idempotently
+5. [ ] Resend everything for anti-entropy
+
+*** Brr instead of sw_of_ocaml
+
+I copied in some code from this [[https://github.com/derui/sw_of_ocaml][sw_of_ocaml]] repo, some of which is
+outdated in its types (?). I couldn't get it working and I found a
+[[https://ocamlverse.net/content/web_networking.html#ocaml-to-javascript][better list of up to date tools]] which lead me to [[https://github.com/dbuenzli/brr/blob/master/test/test_worker.ml][Brr's worker example]].
+
+** Client
+
+1. [ ] Query service worker
+2. [ ] Update handler
+
+** js_common
+
+1. [X] Did jv_item on the plane to convert dohickey types to
+   javascript types, I think I missed a trick about deriving that
+   produces this stuff automatically.
+
+2. [ ] https://erratique.ch/software/jsont/doc/
+
+** Server
+
+1. [ ] Recv idempotently, sqlite
+2. [ ] Broadcast
+3. [ ] Average votes
+
 * Network
 
 1. [ ] Client
@@ -23,3 +60,15 @@
    3. [ ] Add criteria
    4. [ ] Vote
    5. [ ] Export markdown
+
+* Notes
+
+- No JS in =lib= :: =utop= loads the =lib= directory and all of the
+  libraries required to support it. This makes sense for the server,
+  but =utop= can't load the =js_of_ocaml= library, it doesn't have
+  the JS runtime primitives. Only add those dependencies to the
+  =dune= files in the JS specific executable sources.
+
+- Common libraries :: =utop= really only wants to load the stuff in
+  =lib=, so the common code is loaded by that, and =lib= implements
+  the server. There may be a better way to organize it.

@@ -1,4 +1,6 @@
 _build
 dohickey.opam
+.DS_Store
 /tmp
-scratch.ml
+/lib/scratch.ml
+/static/*.js
