@@ -2,6 +2,7 @@
  (name dohickey)
  (libraries
   base64
+  checkseum
   unix))
 
 (include_subdirs qualified)

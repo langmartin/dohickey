@@ -22,6 +22,7 @@
  (depends alcotest
           base64
           brr
+          checkseum
           dream
           dune
           js_of_ocaml
