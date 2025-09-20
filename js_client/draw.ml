@@ -7,85 +7,25 @@
 *)
 
 open Brr
+open Util
 
-let document_el = G.document |> Document.to_jv |> El.of_jv
-
-let qsa ?(el=document_el) querySelector =
-  let o = El.to_jv el in
-  [| (Jv.of_string querySelector) |]
-  |> Jv.call o "querySelectorAll"
-  |> Jv.to_list El.of_jv
-
-let rows() = qsa "#dohickey tbody tr"
-let cols() = qsa "#dohickey tbody tr:first-child td"
-
-let repeatedly f n =
-  let open Seq in
-  repeat f
-  |> take n
-  |> mapi (fun i f -> f i)
-  |> List.of_seq
-
-let set_classes el xs =
-  List.fold_left (fun _ (c, yes) ->
-      El.set_class (Jstr.v c) yes el)
-    ()
-    xs
-
-type attr_v = Int of int | Str of string | Gone
-
-let set_attrs el xs =
-  let at_v x = match x with
-    | Int x -> Some (Jstr.of_int x)
-    | Str x -> Some (Jstr.of_string x)
-    | Gone -> None
-  in
-  List.fold_left (fun _ (c, v) ->
-      El.set_at (Jstr.v c) (at_v v) el)
-    ()
-    xs
-
-let add_ev_listener event f el =
-  let trg = El.as_target el in
-  (* Save this value so we can detatch listeners? *)
-  ignore @@ Ev.listen event f trg;
-  el
+let rows() = qsa "#dohickey tr"
+let cols() = qsa "#dohickey tr:first-child td"
 
 (*
    Find the event context
 *)
 
-let event_el event =
-  event |> Ev.target |> Ev.target_to_jv |> El.of_jv
-
-let rec find_td el =
-  match El.parent el with
-  | None -> None
-  | Some el ->
-    let tag = el |> El.tag_name |> Jstr.to_string in
-    if tag = "td" then
-      Some el
-    else
-      find_td el
-
-let at_id td =
-  match El.at (Jstr.v "id") td with
-  | None -> None
-  | Some id -> Some (Jstr.to_string id)
+let find_td = find_parent "td"
 
 (*
    Voting.
 *)
 
-let at_int prop el =
-  match El.at (Jstr.v prop) el with
-  | Some s -> int_of_string (Jstr.to_string s)
-  | None -> -1
-
-let at_str prop el =
-  match El.at (Jstr.v prop) el with
-  | Some s -> Jstr.to_string s
-  | None -> ""
+let at_id el =
+  match El.at (Jstr.v "id") el with
+  | None -> None
+  | Some id -> Some (Jstr.to_string id)
 
 let btn_rank el =
   let txt = El.text_content el |> Jstr.to_string in
