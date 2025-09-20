@@ -158,22 +158,26 @@ let sync_td parent row col =
   | None -> [make_cell row col] |> El.append_children parent
 
 let sync_cols ncols (row : int) =
+  (* 0 is for the headers, so we want one extra iteration *)
   let el = get_row row in
-  let elf = sync_td el row in
-  ignore @@ repeatedly elf ncols
+  for col = 0 to ncols do
+    sync_td el row col
+  done
 
 let sync_rows n ncols =
-  ignore @@ repeatedly (sync_cols ncols) n
+  for row = 0 to n do
+    sync_cols ncols row
+  done
 
 let item_text (body : Dohickey.Item.text_body) =
   let open Dohickey.Item in
-  let id = key_text body.row body.col in
-  let els = ["#"; id; " .content"] |> String.concat "" |> qsa in
+  let id = idstr [body.row; body.col] in
+  let els = ["#"; id; " .content"] |> String.concat "" |> qs1 in
   match els with
-  | [el] ->
+  | Some el ->
     let el = El.to_jv el in
     ignore @@ Jv.call el "textContent" [| (Jv.of_string body.text) |]
-  | _ -> ()
+  | None -> ()
 
 let item_call (body : Dohickey.Item.call_body) = call_vote body.id
 let item_count () = end_vote

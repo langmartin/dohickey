@@ -8,6 +8,11 @@ let qsa ?(el=document_el) querySelector =
   |> Jv.call o "querySelectorAll"
   |> Jv.to_list El.of_jv
 
+let qs1 ?(el=document_el) querySelector =
+  match qsa ~el:el querySelector with
+  | [el] -> Some el
+  | _ -> None
+
 let add_ev_listener event f el =
   let trg = El.as_target el in
   (* Save this value so we can detatch listeners? *)
