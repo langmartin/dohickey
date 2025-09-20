@@ -2,29 +2,35 @@
 <html>
   <head>
     <title>dohickey</title>
-    <script type="text/javascript" src="/static/js_client.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
     <style>
-      th {min-width: 5em; min-height: 2em;}
-      td {min-width: 5em; min-height: 2em;}
+      :root {
+          --bd: solid 1px #ddd
+      }
+      button { font-family: "cursive" }
+      table { border: var(--bd) }
+      th,td { padding: 1em; margin: 0; border: 0; }
+      th { border-right: var(--bd); }
+      #options th { border-bottom: var(--bd); border-right: 0; }
     </style>
+    <script type="text/javascript" src="/static/js_client.js"></script>
   </head>
   <body>
-    <table id="dohickey" border="1">
-      <thead>
-        <tr>
-          <th id="0-0" onclick="App.text()">Title</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-      <tfoot>
-        <tr>
-          <th scope="row" id="add_goal">
-            + Goal
-          </th>
-          <th id="add_option">+ Option</th>
-        </tr>
-      </tfoot>
+    <table id="dohickey">
+      <tr id="options">
+        <th>
+          <button id="votey">Vote</button>
+          <button id="add-option">Add option</button>
+          <button id="add-goal">Add goal</button>
+        </th>
+        <th>Option #1</th>
+      </tr>
+      <tr>
+        <th>Goal #1</th>
+        <td></td>
+      </tr>
     </table>
   </body>
 </html>
