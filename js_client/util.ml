@@ -21,6 +21,10 @@ let repeatedly f n =
   |> mapi (fun i f -> f i)
   |> List.of_seq
 
+let ida id = (At.id (Jstr.v id))
+
+let clsa names = (At.class' (Jstr.v (String.concat " " names)))
+
 let set_classes el xs =
   List.fold_left (fun _ (c, yes) ->
       El.set_class (Jstr.v c) yes el)

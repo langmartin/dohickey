@@ -9,9 +9,6 @@
 open Brr
 open Util
 
-let rows() = qsa "#dohickey tr"
-let cols() = qsa "#dohickey tr:first-child td"
-
 (*
    Find the event context
 *)
@@ -53,7 +50,7 @@ let vote_btn dir =
 
 (* TODO: on_click event handler that sends a vote *)
 let vote_ctx row col =
-  let el = El.div ~at:[At.hidden]
+  let el = El.div ~at:[At.hidden; clsa ["content"]]
       [vote_btn "+"; vote_btn "-"] in
   [("voting", false); ("ballot-box", true)]
   |> set_classes el;
@@ -105,40 +102,68 @@ let lemme_edit e =
       [editable txt]
 
 (*
-   TODO: contenteditable(?) and event handler to send text.
-   Also send "typing..."
-*)
-let dh_td row col =
-  let id = Dohickey.Item.key_text row col in
-  El.td ~at:[(At.id (Jstr.v id))]
-    [vote_ctx row col;
-     El.div ~at:[(At.class' (Jstr.v "content"))]
-       [El.txt' ""]]
-  |> add_ev_listener Ev.click lemme_edit
-
-(*
    Table
 *)
 
-let sync_cols n =
-  let open List in
-  rows()
-  |> mapi (fun row tr ->
-      repeatedly
-        (fun col ->
-           [dh_td row col]
-           |> El.append_children tr)
-        n)
+let is_header row col = row = 0 || col = 0
 
-let row_el ncols row =
-  let elf = dh_td row in
-  let tds = repeatedly elf ncols in
-  El.tr tds
+let el_id ids =
+  ids
+  |> List.map Int.to_string
+  |> String.concat "-"
+
+let find_el id =
+  let qs = ["#"; id] |> String.concat "" in
+  match qsa qs with
+  | [el] -> Some el
+  | _ -> None
+
+let get_row row =
+  let id = el_id [row] in
+  match find_el id with
+  | Some el -> el
+  | None -> El.tr ~at:[ida id] []
+
+(*
+   TODO: contenteditable(?) and event handler to send text.
+   Also send "typing..."
+
+   The only difference between headers and bodies is whether they
+   contain a vote_ctx, so that's an option.
+*)
+let make_txt () =
+  El.div ~at:[clsa ["content"]]
+    [El.txt' ""]
+
+let make_th id =
+  El.th ~at:[ida id]
+    [make_txt()]
+
+let make_td id row col =
+  El.td ~at:[ida id]
+    [make_txt(); vote_ctx row col]
+
+let make_cell row col =
+  let id = el_id [row; col] in
+  (if is_header row col then
+     make_th id
+   else
+     make_td id row col)
+  |> add_ev_listener Ev.click lemme_edit
+
+let sync_td parent row col =
+  let id = el_id [row; col] in
+  match find_el id with
+  | Some _el -> ()
+  | None -> [make_cell row col] |> El.append_children parent
+
+let sync_cols ncols (row : int) =
+  let el = get_row row in
+  let elf = sync_td el row in
+  ignore @@ repeatedly elf ncols
 
 let sync_rows n ncols =
-  match qsa "#dohickey tbody" with
-  | [tb] -> repeatedly (row_el ncols) n |> El.append_children tb
-  | _ -> ()
+  ignore @@ repeatedly (sync_cols ncols) n
 
 let item_text (body : Dohickey.Item.text_body) =
   let open Dohickey.Item in
@@ -159,10 +184,7 @@ let item_count () = end_vote
 *)
 
 let dims (row, col) =
-  let rn = rows() |> List.length in
-  let cn = cols() |> List.length in
-  sync_rows (row - rn) col;
-  ignore @@ sync_cols (col - cn)
+  ignore @@ sync_rows row col
 
 let item (item : Dohickey.Item.t) =
   match item.body with
