@@ -19,7 +19,7 @@ let find_td = find_parent "td"
    Voting.
 *)
 
-let at_id el =
+let el_id el =
   match El.at (Jstr.v "id") el with
   | None -> None
   | Some id -> Some (Jstr.to_string id)
@@ -82,7 +82,7 @@ let send_text e =
   (* Like piping each step with |> Option.bind but using fancy syntax *)
   let (>>=) = Option.bind in
   find_td el
-  >>= at_id
+  >>= el_id
   >>= Dohickey.Item.parse_pos "text"
   >>= (fun body -> Some (Send.text {body with text=text}))
   |> ignore
@@ -107,7 +107,7 @@ let lemme_edit e =
 
 let is_header row col = row = 0 || col = 0
 
-let el_id ids =
+let idstr ids =
   ids
   |> List.map Int.to_string
   |> String.concat "-"
@@ -119,7 +119,7 @@ let find_el id =
   | _ -> None
 
 let get_row row =
-  let id = el_id [row] in
+  let id = idstr [row] in
   match find_el id with
   | Some el -> el
   | None -> El.tr ~at:[ida id] []
@@ -144,7 +144,7 @@ let make_td id row col =
     [make_txt(); vote_ctx row col]
 
 let make_cell row col =
-  let id = el_id [row; col] in
+  let id = idstr [row; col] in
   (if is_header row col then
      make_th id
    else
@@ -152,7 +152,7 @@ let make_cell row col =
   |> add_ev_listener Ev.click lemme_edit
 
 let sync_td parent row col =
-  let id = el_id [row; col] in
+  let id = idstr [row; col] in
   match find_el id with
   | Some _el -> ()
   | None -> [make_cell row col] |> El.append_children parent
