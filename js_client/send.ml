@@ -21,3 +21,9 @@ let vote vote_body =
   let coda = Coda.empty in
   let body = Item.Vote vote_body in
   post_item {coda; body}
+
+let call id =
+  let open Dohickey in
+  let coda = Coda.empty in
+  let body = Item.Call {id} in
+  post_item {coda; body}
