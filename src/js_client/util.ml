@@ -16,6 +16,7 @@ let qs1 ?(el=document_el) querySelector =
 let add_ev_listener event f el =
   let trg = El.as_target el in
   (* Save this value so we can detatch listeners? *)
+  Console.(debug ["attach"]);
   ignore @@ Ev.listen event f trg;
   el
 

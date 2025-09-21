@@ -5,13 +5,13 @@ open Dohickey
 open Js_common
 
 type t = {
-  mutable table : Jstr.t;
+  mutable table : string;
   mutable ws : Websocket.t option;
   mutable data : Table.t
 }
 
 let state = {
-  table = Jstr.empty;
+  table = "";
   ws = None;
   data = Table.empty
 }
@@ -27,56 +27,55 @@ let send item =
   | Some ws -> Websocket.send_string ws item
   | None -> ()
 
-let jsint key data =
-  Jv.Jstr.get data key
-  |> Jstr.to_int
-  |> Option.get
+let client_push item =
+  let open Js_common in
+  let dims = Table.dims state.data |> Req.of_dims in
+  Worker.G.post dims;
+  let item = item |> Req.of_item in
+  Worker.G.post item
 
-let post_item kind row col =
-  match Table.get_pos kind row col state.data with
-  | Some item ->
-    Worker.G.post item
-  | None ->
-    Worker.G.post Jv.null
+let put_item item =
+  let data = Table.put item state.data in
+  state.data <- data
 
 let recv_from_ws e =
   let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
   let item = Jv_item.of_jv jv in
   match item with
   | Some item ->
-    let data = Table.put item state.data in
-    state.data <- data
+    put_item item;
+    client_push item
   | None -> ()
 
+(* can't do this until the table name is set from the client *)
+let connect_ws () =
+  let ws = Websocket.create Jstr.(v "/a1/socket/" + v state.table) in
+  ignore (Ev.listen Message.Ev.message recv_from_ws (Websocket.as_target ws));
+  state.ws <- Some ws;
+  ()
+
+let got_item item =
+  put_item item;
+  match Jv_item.of_item item with
+  | None -> ()
+  | Some jv ->
+    Jv.to_jstr jv |> send
+
 let recv_from_page e =
-  let data = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
-  let path = Jv.Jstr.get data "path" |> Jstr.to_string in
-  match path with
-  | "table" ->
-    let body = Jv.Jstr.get data "body" in
-    state.table <- body
-
-  | "connect" ->
-    let ws = Websocket.create Jstr.(v "/a1/socket/" + state.table) in
-    ignore (Ev.listen Message.Ev.message recv_from_ws (Websocket.as_target ws));
-    state.ws <- Some ws
-
-  | "text" | "vote" ->
-    let body = Jv.Jstr.get data "body" in
-    send body
-
-  | "dims" ->
-    Worker.G.post (Table.dims state.data)
-
-  | "get_text" ->
-    let row = jsint "row" data in
-    let col = jsint "col" data in
-    post_item "text" row col
-
-  | _ -> assert false
+  let open Js_common in
+  let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
+  let req = Req.of_jv data in
+  match req.body with
+  | Some Title title ->
+    state.table <- title;
+    connect_ws()
+  | Some Item item ->
+    got_item item
+  | Some _ -> ()
+  | None -> ()
 
 let main () =
-  Console.(log [str "Worker hello!"]);
+  Console.(debug ["Worker hello!"]);
   let msg = Ev.next Message.Ev.message G.target in
   let _ = Fut.map recv_from_page msg in
   ()

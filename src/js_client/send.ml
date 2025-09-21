@@ -27,3 +27,10 @@ let call id =
   let coda = Coda.empty in
   let body = Item.Call {id} in
   post_item {coda; body}
+
+let title title =
+  let open Js_common.Req in
+  title
+  |> of_title
+  |> to_jv
+  |> Worker.post !the_worker

@@ -16,6 +16,7 @@ let recv_from_worker e =
   match req.body with
   | Some (Dims (row, col)) -> Draw.dims (row, col)
   | Some Item item -> Draw.item item
+  | Some Title _ -> ()
   | None -> ()
 
 let spawn () =
@@ -25,13 +26,13 @@ let spawn () =
     Send.set_worker w;
     let msg = Ev.next Message.Ev.message (Worker.as_target w) in
     let _ = Fut.map (recv_from_worker) msg in
-    Worker.post w (Jstr.v "Work!");
     ()
 
 (* Event handlers for 3 main table buttons *)
 
 let start_vote ev =
   let btn = event_el ev in
+  Console.(debug [str "start_vote"]);
   match El.parent btn with
   | None -> ()
   | Some _el -> Send.call "FIXME"; ()
@@ -58,6 +59,8 @@ let main () =
   spawn();
   on_click "#votey" start_vote;
   on_click "#add_option" add_option;
-  on_click "#add_goal" add_goal
+  on_click "#add_goal" add_goal;
+  Send.title "FIXME";
+  Console.(debug ["attached"])
 
 let () = main ()

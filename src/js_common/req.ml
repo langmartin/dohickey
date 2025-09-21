@@ -1,6 +1,7 @@
 type body =
   | Item of Dohickey.Item.t
   | Dims of int * int
+  | Title of string
 
 type t = {
     path: string;
@@ -17,6 +18,15 @@ let item_body jv =
   match Jv_item.of_jv jv with
   | Some item -> Some (Item item)
   | None -> None
+
+let of_dims (rows, cols) =
+  { path = "dims"; body = Some (Dims (rows, cols)) }
+
+let of_item item =
+  { path = "item"; body = Some (Item item) }
+
+let of_title title =
+  { path = "title"; body = Some (Title title) }
 
 let of_jv jv =
   let path = Jv.get jv "path" |> Jv.to_string in
