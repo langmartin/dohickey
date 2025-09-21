@@ -1,5 +1,5 @@
 let start listen data =
-  if listen <> "" && Sys.file_exists data then
+  if Sys.file_exists data then
     let (ip, port) = match String.split_on_char ':' listen with
     | ip :: port :: _ -> (ip, port)
     | ip :: _ -> (ip, "8080")
@@ -7,7 +7,7 @@ let start listen data =
     in
     let open Ht_server in
     let _ = start_server ip (int_of_string port) in
-    `Ok (Printf.printf "starting")
+    `Ok (Printf.printf "started")
   else
     `Error (false, "data directory must exist")
 
@@ -36,5 +36,18 @@ let cmd =
   let info = Cmd.info "start" ~version:"%‌%VERSION%%" ~doc ~man in
   Cmd.v info start_t
 
-let main () = exit (Cmd.eval cmd)
+let wait_forever() =
+  while true do
+    Thread.delay 300.0
+  done;
+  ()
+
+let main () =
+  (match Cmd.eval cmd with
+  | 0 ->
+    wait_forever();
+    0
+  | code -> code)
+  |> exit
+
 let () = main ()
