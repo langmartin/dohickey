@@ -46,8 +46,8 @@ let start_server listen_ip listen_port =
     Dream.get "/page.js" (js page_js);
 
     (* FIXME for development only *)
-    Dream.get "/public/**" (Dream.static "../public");
-    Dream.get "/static/**" (Dream.static "../static");
+    Dream.get "/public/**" (Dream.static "src/public");
+    Dream.get "/static/**" (Dream.static "static");
 
     Dream.post "/sign-in"
       (fun request ->

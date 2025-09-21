@@ -1,9 +1,5 @@
-(* open Scratch *)
-(* Topfind.reset() *)
-
-(* http://localhost:8081/static/table.html *)
+(* open Dohickey_unix *)
+(* Sys.chdir "..";; *)
 (* let server = Ht_server.start_server "127.0.0.1" 8081 *)
 
-(* open Service_worker.Main *)
-
-(* open World *)
+(* http://localhost:8081/public/table.html *)

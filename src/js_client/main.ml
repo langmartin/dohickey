@@ -6,7 +6,7 @@ open Util
 (* Start the worker and listen for events *)
 
 let spawn_worker () = try
-    Ok (Worker.create (Jstr.v "test_worker.js"))
+    Ok (Worker.create (Jstr.v "/static/js_service_worker.js"))
   with
   | Jv.Error e -> Error e
 
