@@ -91,6 +91,7 @@ let editable txt =
   |> add_ev_listener Ev.focusout send_text
 
 let lemme_edit e =
+  Ev.stop_propagation e;
   let el = Ev.target e |> Ev.target_to_jv |> El.of_jv in
   match El.find_first_by_selector ~root:el (Jstr.v ".content") with
   | None -> ()
@@ -105,9 +106,10 @@ let lemme_edit e =
 
 let is_header row col = row = 0 || col = 0
 
-let idstr ids =
+let make_id ids =
   ids
   |> List.map Int.to_string
+  |> List.cons "dh"
   |> String.concat "-"
 
 let find_el id =
@@ -116,11 +118,19 @@ let find_el id =
   | [el] -> Some el
   | _ -> None
 
+let append_row row =
+  match qs1 "#dohickey tbody" with
+  | None -> ()
+  | Some el -> El.append_children el [row]
+
 let get_row row =
-  let id = idstr [row] in
+  let id = make_id [row] in
   match find_el id with
   | Some el -> el
-  | None -> El.tr ~at:[id' id] []
+  | None ->
+    let row = El.tr ~at:[id' id] [] in
+    append_row row;
+    row
 
 (*
    TODO: contenteditable(?) and event handler to send text.
@@ -129,28 +139,34 @@ let get_row row =
    The only difference between headers and bodies is whether they
    contain a vote_ctx, so that's an option.
 *)
-let make_txt () =
+let make_txt row col =
   El.div ~at:[cls ["content"]]
-    [El.txt' ""]
+    [El.txt'
+       (if row = 0 then
+          "Option #" ^ (Int.to_string col)
+        else if col = 0 then
+          "Goal #" ^ (Int.to_string row)
+        else
+          "deets")]
 
-let make_th id =
+let make_th id row col =
   El.th ~at:[id' id]
-    [make_txt()]
+    [make_txt row col]
 
 let make_td id row col =
   El.td ~at:[id' id]
-    [make_txt(); vote_ctx row col]
+    [make_txt row col; vote_ctx row col]
 
 let make_cell row col =
-  let id = idstr [row; col] in
+  let id = make_id [row; col] in
   (if is_header row col then
-     make_th id
+     make_th id row col
    else
      make_td id row col)
   |> add_ev_listener Ev.click lemme_edit
 
 let sync_td parent row col =
-  let id = idstr [row; col] in
+  let id = make_id [row; col] in
   match find_el id with
   | Some _el -> ()
   | None -> [make_cell row col] |> El.append_children parent
@@ -169,7 +185,7 @@ let sync_rows n ncols =
 
 let item_text (body : Dohickey.Item.text_body) =
   let open Dohickey.Item in
-  let id = idstr [body.row; body.col] in
+  let id = make_id [body.row; body.col] in
   let els = ["#"; id; " .content"] |> String.concat "" |> qs1 in
   match els with
   | Some el ->

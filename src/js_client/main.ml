@@ -31,22 +31,26 @@ let spawn () =
 (* Event handlers for 3 main table buttons *)
 
 let start_vote ev =
+  Ev.stop_propagation ev;
   let btn = event_el ev in
   Console.(debug [str "start_vote"]);
   match El.parent btn with
   | None -> ()
   | Some _el -> Send.call "FIXME"; ()
 
-let option_dims rows cols = (rows + 1, cols)
-let goal_dims rows cols = (rows, cols + 1)
+let goal_dims rows cols = (rows + 1, cols)
+let option_dims rows cols = (rows, cols + 1)
 
 let add_handler dims ev =
+  Ev.stop_propagation ev;
   let btn = event_el ev in
   match El.parent btn with
   | None -> ()
   | Some _el ->
-    let rows = qsa "#dohickey tr" |> List.length |> ( - ) 1 in
-    let cols = qsa "#dohickey td" |> List.length in
+    let dec n = n - 1 in
+    let count qs = qsa qs |> List.length |> dec in
+    let rows = count "#dohickey tr" in
+    let cols = count "#dh-0 th" in
     Draw.dims (dims rows cols)
 
 let add_option = add_handler option_dims

@@ -2,8 +2,8 @@ open Brr
 
 let document_el = G.document |> Document.to_jv |> El.of_jv
 
-let dbg obj =
-  Console.(debug ["dbg:"; obj]);
+let dbg label obj =
+  Console.(debug ["dbg"; label; obj]);
   obj
 
 let qsa ?(el=document_el) querySelector =
