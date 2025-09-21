@@ -10,12 +10,6 @@ open Brr
 open Util
 
 (*
-   Find the event context
-*)
-
-let find_td = find_parent "td"
-
-(*
    Voting.
 *)
 
@@ -75,30 +69,50 @@ let end_vote() = qsa "#dohickey .ballot-box" |> each end_one_vote
    Text
 *)
 
+let flag = "data-editing"
+
+let find_cell ev =
+  let trg = event_el ev in
+  match find_parent (is_tag ["th"; "td"]) trg with
+  | Some el -> el
+  | None -> trg
+
+let el_text el =
+  match el with
+  | Some el -> el |> El.text_content |> Jstr.to_string
+  | None -> ""
+
+let content_text el =
+  qs1 ~el:el ".content" |> el_text
+
 let send_text e =
-  let el = event_el e in
-  let text = el |> El.text_content |> Jstr.to_string in
-  (* Like piping each step with |> Option.bind but using fancy syntax *)
-  find_td el
-  >>= el_id
+  Ev.stop_propagation e;
+  let el = find_cell e in
+  let text = content_text el in
+  el_id el
   >>= Dohickey.Item.parse_pos "text"
   >>= (fun body -> Some (Send.text {body with text=text}))
-  |> ignore
+  |> ignore;
+  set_attrs el [(flag, Gone)]
 
 let editable txt =
-  El.textarea
-    [El.txt txt]
-  |> add_ev_listener Ev.focusout send_text
+  El.div
+    [El.textarea
+       [El.txt' txt];
+     El.button
+       [El.txt' "send"]
+     |> add_ev_listener Ev.click send_text]
 
 let lemme_edit e =
   Ev.stop_propagation e;
-  let el = Ev.target e |> Ev.target_to_jv |> El.of_jv in
-  match El.find_first_by_selector ~root:el (Jstr.v ".content") with
-  | None -> ()
-  | Some ct ->
-    let txt = El.text_content ct in
-    El.set_children ct
-      [editable txt]
+  let el = find_cell e in
+  if at_bool flag el then
+    ()
+  else
+    let text = content_text el in
+    set_attrs el [(flag, True)];
+    El.set_children el
+      [editable text]
 
 (*
    Table
@@ -139,15 +153,18 @@ let get_row row =
    The only difference between headers and bodies is whether they
    contain a vote_ctx, so that's an option.
 *)
-let make_txt row col =
+let make_content text =
   El.div ~at:[cls ["content"]]
-    [El.txt'
-       (if row = 0 then
-          "Option #" ^ (Int.to_string col)
-        else if col = 0 then
-          "Goal #" ^ (Int.to_string row)
-        else
-          "deets")]
+    [El.txt' text]
+
+let make_txt row col =
+  (if row = 0 then
+     "Option #" ^ (Int.to_string col)
+   else if col = 0 then
+     "Goal #" ^ (Int.to_string row)
+   else
+     "deets")
+  |> make_content
 
 let make_th id row col =
   El.th ~at:[id' id]

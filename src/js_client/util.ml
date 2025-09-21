@@ -1,5 +1,7 @@
 open Brr
 
+let (>>=) = Option.bind
+
 let document_el = G.document |> Document.to_jv |> El.of_jv
 
 let dbg label obj =
@@ -45,12 +47,13 @@ let set_classes el xs =
     ()
     xs
 
-type attr_v = Int of int | Str of string | Gone
+type attr_v = Int of int | Str of string | True | Gone
 
 let set_attrs el xs =
   let at_v x = match x with
     | Int x -> Some (Jstr.of_int x)
     | Str x -> Some (Jstr.of_string x)
+    | True -> Some Jstr.empty
     | Gone -> None
   in
   List.fold_left (fun _ (c, v) ->
@@ -61,15 +64,17 @@ let set_attrs el xs =
 let event_el event =
   event |> Ev.target |> Ev.target_to_jv |> El.of_jv
 
-let rec find_parent tag el =
-  match El.parent el with
-  | None -> None
-  | Some el ->
-    let tg = el |> El.tag_name |> Jstr.to_string in
-    if tg = tag then
-      Some el
-    else
-      find_parent tag el
+let is_tag tags el =
+  let tag = el |> El.tag_name |> Jstr.to_string in
+  List.mem tag tags
+
+let is_qs qs el = El.find_first_by_selector ~root:el (Jstr.v qs) |> Option.is_some
+
+let rec find_parent is el =
+  if is el then
+    Some el
+  else
+    El.parent el >>= find_parent is
 
 let at_int prop el =
   match El.at (Jstr.v prop) el with
@@ -81,4 +86,7 @@ let at_str prop el =
   | Some s -> Jstr.to_string s
   | None -> ""
 
-let (>>=) = Option.bind
+let at_bool prop el =
+  match El.at (Jstr.v prop) el with
+  | Some _ -> true
+  | None -> false

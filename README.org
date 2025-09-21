@@ -25,8 +25,9 @@ the client to add it to the drawing loop.
 
 1. [X] Start service worker
 2. [X] Event handlers on the basic buttons
-3. [ ] Just call our own ~dims~ to increase the size of the table,
+3. [X] Just call our own ~dims~ to increase the size of the table,
    we'll wait until we make an item to get dims from the worker.
+4. [ ] Make one editor and attach it to the cell
 
 ** js_common
 
