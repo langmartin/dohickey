@@ -1,3 +1,6 @@
+open Cmdliner
+open Dohickey_unix
+
 let start listen data =
   if Sys.file_exists data then
     let (ip, port) = match String.split_on_char ':' listen with
@@ -10,8 +13,6 @@ let start listen data =
     `Ok (Printf.printf "started")
   else
     `Error (false, "data directory must exist")
-
-open Cmdliner
 
 (* Server options *)
 let listen =

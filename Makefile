@@ -1,8 +1,6 @@
-sources = $(wildcard lib/*.ml* lib/*/*.ml* bin/*.ml js_*/*.ml*)
-
 build_all: build static/js_client static/js_service_worker
 
-build: $(sources) Makefile
+build:
 	dune build
 
 # https://discuss.ocaml.org/t/js-of-ocaml-output-performs-considerably-worse-when-built-with-profile-release-flag/8862/15
@@ -12,7 +10,7 @@ release: $(sources) Makefile
 release_all: release static/js_client static/js_service_worker
 
 static/%:
-	cp -f _build/default/$*/main.bc.js static/$*.js
+	cp -f _build/default/src/$*/main.bc.js static/$*.js
 
 deps:
 	dune build || true
