@@ -50,13 +50,15 @@ let vote_btn dir =
 
 (* TODO: on_click event handler that sends a vote *)
 let vote_ctx row col =
-  let el = El.div ~at:[At.hidden; clsa ["content"]]
-      [vote_btn "+"; vote_btn "-"] in
-  [("voting", false); ("ballot-box", true)]
-  |> set_classes el;
-  [("data-row", Int row); ("data-col", Int col)]
-  |> set_attrs el;
-  el
+  let data_row i = At.(int (Jstr.v "data-row") i) in
+  let data_col i = At.(int (Jstr.v "data-col") i) in
+  El.div ~at:[
+    At.hidden;
+    cls ["ballot-box"];
+    data_row row;
+    data_col col
+  ]
+    [vote_btn "+"; vote_btn "-"]
 
 let call_one_vote id el =
   set_classes el [("voting", true)];
@@ -66,11 +68,8 @@ let end_one_vote el =
   set_classes el [("voting", false)];
   set_attrs el [("data-call", Gone)]
 
-let each f lst =
-  List.fold_left (fun _ x -> f x) () lst
-
 let call_vote id = qsa "#dohickey .ballot-box" |> each (call_one_vote id)
-let end_vote = qsa "#dohickey .ballot-box" |> each end_one_vote
+let end_vote() = qsa "#dohickey .ballot-box" |> each end_one_vote
 
 (*
    Text
@@ -80,7 +79,6 @@ let send_text e =
   let el = event_el e in
   let text = el |> El.text_content |> Jstr.to_string in
   (* Like piping each step with |> Option.bind but using fancy syntax *)
-  let (>>=) = Option.bind in
   find_td el
   >>= el_id
   >>= Dohickey.Item.parse_pos "text"
@@ -122,7 +120,7 @@ let get_row row =
   let id = idstr [row] in
   match find_el id with
   | Some el -> el
-  | None -> El.tr ~at:[ida id] []
+  | None -> El.tr ~at:[id' id] []
 
 (*
    TODO: contenteditable(?) and event handler to send text.
@@ -132,15 +130,15 @@ let get_row row =
    contain a vote_ctx, so that's an option.
 *)
 let make_txt () =
-  El.div ~at:[clsa ["content"]]
+  El.div ~at:[cls ["content"]]
     [El.txt' ""]
 
 let make_th id =
-  El.th ~at:[ida id]
+  El.th ~at:[id' id]
     [make_txt()]
 
 let make_td id row col =
-  El.td ~at:[ida id]
+  El.td ~at:[id' id]
     [make_txt(); vote_ctx row col]
 
 let make_cell row col =
@@ -180,7 +178,7 @@ let item_text (body : Dohickey.Item.text_body) =
   | None -> ()
 
 let item_call (body : Dohickey.Item.call_body) = call_vote body.id
-let item_count () = end_vote
+let item_count () = end_vote()
 
 (*
    ======================================================================
