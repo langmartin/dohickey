@@ -58,9 +58,12 @@ let on_click qs f =
 let main () =
   spawn();
   on_click "#votey" start_vote;
-  on_click "#add_option" add_option;
-  on_click "#add_goal" add_goal;
+  on_click "#add-option" add_option;
+  on_click "#add-goal" add_goal;
   Send.title "FIXME";
-  Console.(debug ["attached"])
+  Console.(debug ["client hello"])
 
-let () = main ()
+let () =
+  ignore @@
+  Fut.bind (Ev.next Ev.load (Window.as_target G.window)) @@
+  (fun _ev -> main(); Fut.return())

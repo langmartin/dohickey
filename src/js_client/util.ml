@@ -2,9 +2,13 @@ open Brr
 
 let document_el = G.document |> Document.to_jv |> El.of_jv
 
+let dbg obj =
+  Console.(debug ["dbg:"; obj]);
+  obj
+
 let qsa ?(el=document_el) querySelector =
   let o = El.to_jv el in
-  [| (Jv.of_string querySelector) |]
+  [| Jv.of_string querySelector |]
   |> Jv.call o "querySelectorAll"
   |> Jv.to_list El.of_jv
 
@@ -14,9 +18,9 @@ let qs1 ?(el=document_el) querySelector =
   | _ -> None
 
 let add_ev_listener event f el =
+  Console.(debug ["add_ev_listener"; event; el]);
   let trg = El.as_target el in
   (* Save this value so we can detatch listeners? *)
-  Console.(debug ["attach"]);
   ignore @@ Ev.listen event f trg;
   el
 

@@ -3,12 +3,16 @@ open Brr_webworkers
 let the_worker = ref (Worker.of_jv Jv.null)
 let set_worker w = the_worker := w
 
+let debug_post jv =
+  Brr.Console.(debug ["to worker:"; jv]);
+  Worker.post !the_worker jv
+
 let post_item item =
   let open Js_common.Req in
   let body = Some (Item item) in
   let req = {path = "item"; body} in
   let jv = to_jv req in
-  Worker.post !the_worker jv
+  debug_post jv
 
 let text text_body =
   let open Dohickey in
@@ -33,4 +37,4 @@ let title title =
   title
   |> of_title
   |> to_jv
-  |> Worker.post !the_worker
+  |> debug_post

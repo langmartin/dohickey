@@ -65,6 +65,7 @@ let recv_from_page e =
   let open Js_common in
   let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
   let req = Req.of_jv data in
+  Console.(debug ["from client:"; data]);
   match req.body with
   | Some Title title ->
     state.table <- title;
@@ -75,7 +76,7 @@ let recv_from_page e =
   | None -> ()
 
 let main () =
-  Console.(debug ["Worker hello!"]);
+  Console.(debug ["worker hello"]);
   let msg = Ev.next Message.Ev.message G.target in
   let _ = Fut.map recv_from_page msg in
   ()
