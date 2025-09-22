@@ -32,10 +32,10 @@ let send item =
   | None -> ()
 
 let client_push item =
-  let open Js_common in
-  let dims = Table.dims state.data |> Req.of_dims in
+  let open Req in
+  let dims = Table.dims state.data |> of_dims |> to_jv in
   Worker.G.post dims;
-  let item = item |> Req.of_item in
+  let item = item |> of_item |> to_jv |> dbg "client_push" in
   Worker.G.post item
 
 let put_item item =
@@ -70,7 +70,7 @@ let rec recv_from_page e =
   let open Js_common in
   let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
 
-  Console.(debug ["from client:"; data]);
+  Console.(debug ["recv_from_page"; data]);
 
   let req = Req.of_jv data in
   begin
