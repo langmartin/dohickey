@@ -16,6 +16,10 @@ let state = {
   data = Table.empty
 }
 
+let dbg label obj =
+  Console.(debug ["dbg"; label; obj]);
+  obj
+
 let parse data =
   let res = data |> Json.decode |> Result.to_option in
   match res with
@@ -56,17 +60,21 @@ let connect_ws () =
 
 let got_item item =
   put_item item;
-  match Jv_item.of_item item with
-  | None -> ()
-  | Some jv ->
-    Jv.to_jstr jv |> send
+  (match Jv_item.of_item item with
+   | None -> ()
+   | Some jv ->
+     Jv.to_jstr jv |> send);
+  client_push item
 
-let recv_from_page e =
+let rec recv_from_page e =
   let open Js_common in
   let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
-  let req = Req.of_jv data in
+
   Console.(debug ["from client:"; data]);
-  match req.body with
+
+  let req = Req.of_jv data in
+  begin
+    match req.body with
   | Some Title title ->
     state.table <- title;
     connect_ws()
@@ -74,6 +82,11 @@ let recv_from_page e =
     got_item item
   | Some _ -> ()
   | None -> ()
+  end;
+
+  let msg = Ev.next Message.Ev.message G.target in
+  let _ = Fut.map recv_from_page msg in
+  ()
 
 let main () =
   Console.(debug ["worker hello"]);

@@ -9,6 +9,15 @@
 open Brr
 open Util
 
+let make_id ids =
+  ids
+  |> List.map Int.to_string
+  |> List.cons "dh"
+  |> String.concat "-"
+
+let parse_id ids =
+  Dohickey.Item.parse_pos "dh" ids
+
 (*
    Voting.
 *)
@@ -77,28 +86,43 @@ let find_cell ev =
   | Some el -> el
   | None -> trg
 
-let el_text el =
-  match el with
-  | Some el -> el |> El.text_content |> Jstr.to_string
+let el_text el = Some (El.text_content el)
+let el_value el = Some (El.prop El.Prop.value el)
+
+let to_s jst = match jst with
+  | Some jst -> Jstr.to_string jst
   | None -> ""
 
 let content_text el =
-  qs1 ~el:el ".content" |> el_text
+  qs1 ~el:el ".content" >>= el_text |> to_s
+
+let editor_text el =
+  qs1 ~el:el ".editor input" >>= el_value |> to_s
+
+let el_remove el = Some (El.remove el)
+
+let send_text text body =
+  Some (Send.text {body with text=text})
 
 let send_text e =
   Ev.stop_propagation e;
   let el = find_cell e in
-  let text = content_text el in
+  let text = editor_text el in
+  (* Build and send the message *)
   el_id el
-  >>= Dohickey.Item.parse_pos "text"
-  >>= (fun body -> Some (Send.text {body with text=text}))
+  >>= parse_id
+  >>= send_text text
   |> ignore;
-  set_attrs el [(flag, Gone)]
+
+  (* Remove the flag that prevents double editing *)
+  set_attrs el [(flag, Gone)];
+
+  (* Remove the editor *)
+  qs1 ~el:el ".editor" >>= el_remove |> ignore
 
 let editable txt =
-  El.div
-    [El.textarea
-       [El.txt' txt];
+  El.div ~at:[cls ["editor"]]
+    [El.input ~at:[At.type' (Jstr.v "text"); At.placeholder (Jstr.v txt)] ();
      El.button
        [El.txt' "send"]
      |> add_ev_listener Ev.click send_text]
@@ -119,12 +143,6 @@ let lemme_edit e =
 *)
 
 let is_header row col = row = 0 || col = 0
-
-let make_id ids =
-  ids
-  |> List.map Int.to_string
-  |> List.cons "dh"
-  |> String.concat "-"
 
 let find_el id =
   let qs = ["#"; id] |> String.concat "" in

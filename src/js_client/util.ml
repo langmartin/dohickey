@@ -36,8 +36,8 @@ let repeatedly f n =
 let each f lst =
   List.fold_left (fun _ x -> f x) () lst
 
-let id' id = (At.id (Jstr.v id))
-let cls names = (At.class' (Jstr.v (String.concat " " names)))
+let id' id = At.id (Jstr.v id)
+let cls names = At.class' (Jstr.v (String.concat " " names))
 let data_row i = At.(int (Jstr.v "data-row") i)
 let data_col i = At.(int (Jstr.v "data-col") i)
 
