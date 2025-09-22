@@ -4,3 +4,4 @@ dohickey.opam
 /tmp
 /lib/scratch.ml
 /static/*.js
+bin/.ocamlinit
