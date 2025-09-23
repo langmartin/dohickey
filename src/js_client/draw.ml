@@ -47,22 +47,6 @@ let send_vote ev =
     at_vote btn el
     |> Send.vote
 
-let vote_btn dir =
-  El.button [El.txt' dir]
-  |> add_ev_listener Ev.click send_vote
-
-(* TODO: on_click event handler that sends a vote *)
-let vote_ctx row col =
-  let data_row i = At.(int (Jstr.v "data-row") i) in
-  let data_col i = At.(int (Jstr.v "data-col") i) in
-  El.div ~at:[
-    At.hidden;
-    cls ["ballot-box"];
-    data_row row;
-    data_col col
-  ]
-    [vote_btn "+"; vote_btn "-"]
-
 let call_one_vote id el =
   set_classes el [("voting", true)];
   set_attrs el [("data-call", Str id)]
@@ -171,33 +155,12 @@ let get_row row =
    The only difference between headers and bodies is whether they
    contain a vote_ctx, so that's an option.
 *)
-let make_content text =
-  El.div ~at:[cls ["content"]]
-    [El.txt' text]
-
-let make_txt row col =
-  (if row = 0 then
-     "Option #" ^ (Int.to_string col)
-   else if col = 0 then
-     "Goal #" ^ (Int.to_string row)
-   else
-     "deets")
-  |> make_content
-
-let make_th id row col =
-  El.th ~at:[id' id]
-    [make_txt row col]
-
-let make_td id row col =
-  El.td ~at:[id' id]
-    [make_txt row col; vote_ctx row col]
-
 let make_cell row col =
   let id = make_id [row; col] in
   (if is_header row col then
-     make_th id row col
+     Style.th id row col
    else
-     make_td id row col)
+     Style.td ~vote:send_vote id row col)
   |> add_ev_listener Ev.click lemme_edit
 
 let sync_td parent row col =
