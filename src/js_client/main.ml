@@ -10,23 +10,29 @@ let spawn_worker () = try
   with
   | Jv.Error e -> Error e
 
-let recv_from_worker e =
-  let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
+let rec recv_from_worker w ev =
+  let data = Message.Ev.data (Ev.as_type ev) |> Ev.to_jv in
   let req = Js_common.Req.of_jv data in
-  match req.body with
-  | Some (Dims (row, col)) -> Draw.dims (row, col)
-  | Some Item item -> Draw.item item
-  | Some Title _ -> ()
-  | None -> ()
+  begin
+    match req.body with
+    | Some (Dims (row, col)) -> Draw.dims (row, col)
+    | Some Item item -> Draw.item item
+    | Some Title _ -> ()
+    | None -> ()
+  end;
+  recv_lp w
+
+and recv_lp w =
+  let msg = Ev.next Message.Ev.message (Worker.as_target w) in
+  let _ = Fut.map (recv_from_worker w) msg in
+  ()
 
 let spawn () =
   match spawn_worker () with
   | Error _e -> ()
   | Ok w ->
     Send.set_worker w;
-    let msg = Ev.next Message.Ev.message (Worker.as_target w) in
-    let _ = Fut.map (recv_from_worker) msg in
-    ()
+    recv_lp w
 
 (* Event handlers for 3 main table buttons *)
 
@@ -68,6 +74,7 @@ let main () =
   Console.(debug ["client hello"])
 
 let () =
+  (* Wait for page load *)
   ignore @@
   Fut.bind (Ev.next Ev.load (Window.as_target G.window)) @@
-  (fun _ev -> main(); Fut.return())
+  fun _ev -> main(); Fut.return()

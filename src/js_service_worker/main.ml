@@ -75,23 +75,23 @@ let rec recv_from_page e =
   let req = Req.of_jv data in
   begin
     match req.body with
-  | Some Title title ->
-    state.table <- title;
-    connect_ws()
-  | Some Item item ->
-    got_item item
-  | Some _ -> ()
-  | None -> ()
+    | Some Title title ->
+      state.table <- title;
+      connect_ws()
+    | Some Item item ->
+      got_item item
+    | Some _ -> ()
+    | None -> ()
   end;
+  recv_lp()
 
+and recv_lp () =
   let msg = Ev.next Message.Ev.message G.target in
   let _ = Fut.map recv_from_page msg in
   ()
 
 let main () =
   Console.(debug ["worker hello"]);
-  let msg = Ev.next Message.Ev.message G.target in
-  let _ = Fut.map recv_from_page msg in
-  ()
+  recv_lp()
 
 let () = main ()
