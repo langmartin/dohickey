@@ -1,5 +1,14 @@
 * Design
 
+** Development
+
+- ~utop~ should be started from the ~bin~ directory, otherwise it
+  attempts to load the ~Js_common~ library and fails because it
+  doesn't have compiled javascript support. See ~.ocamlinit-sample~ in
+  that directory. Once it's started the buffer ~default-directory~
+  will make it accessible (and restart-able) from any file in the
+  project.
+
 ** Service Worker
 
 The service worker can store data locally and take care of resending
