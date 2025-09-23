@@ -135,7 +135,7 @@ let lemme_edit e =
   else
     let text = content_text el in
     set_attrs el [(flag, True)];
-    El.set_children el
+    El.append_children el
       [editable text]
 
 (*
@@ -203,7 +203,9 @@ let make_cell row col =
 let sync_td parent row col =
   let id = make_id [row; col] in
   match find_el id with
-  | Some _el -> ()
+  | Some _el ->
+    ignore @@ "skip" |> dbg "find";
+    ()
   | None -> [make_cell row col] |> El.append_children parent
 
 let sync_cols ncols (row : int) =
@@ -224,8 +226,8 @@ let item_text (body : Dohickey.Item.text_body) =
   let els = ["#"; id; " .content"] |> String.concat "" |> qs1 in
   match els with
   | Some el ->
-    let el = El.to_jv el in
-    ignore @@ Jv.call el "textContent" [| (Jv.of_string body.text) |]
+    El.set_children el
+      [El.txt' body.text]
   | None -> ()
 
 let item_call (body : Dohickey.Item.call_body) = call_vote body.id
