@@ -3,6 +3,9 @@ open Brr_webworkers
 let the_worker = ref (Worker.of_jv Jv.null)
 let set_worker w = the_worker := w
 
+let the_user = ref ""
+let set_user u = the_user := u
+
 let debug_post jv =
   Brr.Console.(debug ["to worker:"; jv]);
   Worker.post !the_worker jv

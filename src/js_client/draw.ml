@@ -187,9 +187,9 @@ open Dohickey
 
 let item_text (body : Item.text_body) (coda : Coda.t) =
   let open Dohickey.Item in
-  let user = coda.user in
+  let _user = coda.user in
   let id = make_id [body.row; body.col] in
-  let els = ["#"; id; " .content-"; user] |> String.concat "" |> qs1 in
+  let els = ["#"; id; " .content"] |> String.concat "" |> qs1 in
   match els with
   | Some el ->
     El.set_children el
@@ -214,3 +214,8 @@ let item (item : Item.t) =
   | Count _it -> item_count() (* TODO match the id? Maybe server already did *)
   | Vote _it -> ()
   | Result _it -> ()
+
+let title title =
+  match qs1 "#title" with
+  | Some el -> El.set_children el [El.txt' title]
+  | None -> ()

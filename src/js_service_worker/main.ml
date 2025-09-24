@@ -31,6 +31,10 @@ let send item =
   | Some ws -> Websocket.send_string ws item
   | None -> ()
 
+let client_push_title title =
+  let open Req in
+  title |> of_title |> to_jv |> Worker.G.post
+
 let client_push item =
   let open Req in
   let dims = Table.dims state.data |> of_dims |> to_jv in
@@ -77,7 +81,8 @@ let rec recv_from_page e =
     match req.body with
     | Some Title title ->
       state.table <- title;
-      connect_ws()
+      connect_ws();
+      client_push_title title
     | Some Item item ->
       got_item item
     | Some _ -> ()

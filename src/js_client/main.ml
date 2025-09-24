@@ -16,11 +16,9 @@ let rec recv_from_worker w ev =
   let req = Js_common.Req.of_jv data in
   begin
     match req.body with
-    | Some (Dims (row, col)) ->
-      Draw.dims (row, col)
-    | Some Item item ->
-      Draw.item item
-    | Some Title _ -> ()
+    | Some (Dims (row, col)) -> Draw.dims (row, col)
+    | Some Item item -> Draw.item item
+    | Some Title title -> Draw.title title
     | None -> ()
   end;
   recv_lp w
