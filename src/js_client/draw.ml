@@ -183,17 +183,20 @@ let sync_rows n ncols =
     sync_cols ncols row
   done
 
-let item_text (body : Dohickey.Item.text_body) =
+open Dohickey
+
+let item_text (body : Item.text_body) (coda : Coda.t) =
   let open Dohickey.Item in
+  let user = coda.user in
   let id = make_id [body.row; body.col] in
-  let els = ["#"; id; " .content"] |> String.concat "" |> qs1 in
+  let els = ["#"; id; " .content-"; user] |> String.concat "" |> qs1 in
   match els with
   | Some el ->
     El.set_children el
       [El.txt' body.text]
   | None -> ()
 
-let item_call (body : Dohickey.Item.call_body) = call_vote body.id
+let item_call (body : Item.call_body) = call_vote body.id
 let item_count () = end_vote()
 
 (*
@@ -204,9 +207,9 @@ let item_count () = end_vote()
 let dims (row, col) =
   ignore @@ sync_rows row col
 
-let item (item : Dohickey.Item.t) =
+let item (item : Item.t) =
   match item.body with
-  | Text it -> item_text it
+  | Text it -> item_text it item.coda
   | Call it -> item_call it
   | Count _it -> item_count() (* TODO match the id? Maybe server already did *)
   | Vote _it -> ()

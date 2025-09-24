@@ -1,6 +1,12 @@
 open Brr
 open Util
 
+let _id ids =
+  ids
+  |> List.map Int.to_string
+  |> List.cons "dh"
+  |> String.concat "-"
+
 let vote_btn send_vote dir =
   El.button [El.txt' dir]
   |> add_ev_listener Ev.click send_vote
