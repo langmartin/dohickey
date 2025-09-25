@@ -1,5 +1,14 @@
 * Design
 
+** Development
+
+- ~utop~ should be started from the ~bin~ directory, otherwise it
+  attempts to load the ~Js_common~ library and fails because it
+  doesn't have compiled javascript support. See ~.ocamlinit-sample~ in
+  that directory. Once it's started the buffer ~default-directory~
+  will make it accessible (and restart-able) from any file in the
+  project.
+
 ** Service Worker
 
 The service worker can store data locally and take care of resending
@@ -18,8 +27,16 @@ outdated in its types (?). I couldn't get it working and I found a
 
 ** Client
 
-1. [ ] Query service worker
-2. [ ] Update handler
+The client draws incoming ~Req~ messages. It sends outgoing ~Item~ s
+to the service worker. The two loops are disconnected, the service
+worker is expected to send back the message that was just created on
+the client to add it to the drawing loop.
+
+1. [X] Start service worker
+2. [X] Event handlers on the basic buttons
+3. [X] Just call our own ~dims~ to increase the size of the table,
+   we'll wait until we make an item to get dims from the worker.
+4. [ ] Make one editor and attach it to the cell
 
 ** js_common
 

@@ -1,6 +1,11 @@
 open Dohickey.Coda
 open Dohickey.Item
 
+let _jf key default coerce jv =
+  match Jv.find jv key with
+  | Some jv -> coerce jv
+  | None -> default
+
 let jint key jv = Jv.Int.get jv key
 let jstr key jv = Jv.Jstr.get jv key |> Jstr.to_string
 let jobj key jv = Jv.get jv key
@@ -14,9 +19,10 @@ let of_jv jv =
   let coda = jobj "coda" jv |> coda_of_jv in
   match jstr "type" jv with
   | "text" ->
-    let row = jint "row" jv in
-    let col = jint "col" jv in
-    let text = jstr "text" jv in
+    let body = Jv.get jv "body" in
+    let row = jint "row" body in
+    let col = jint "col" body in
+    let text = jstr "text" body in
     Some {coda; body = Text {row; col; text}}
   | _ -> None
 

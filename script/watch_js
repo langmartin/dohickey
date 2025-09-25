@@ -1,0 +1,10 @@
+#!/bin/sh
+rate=10
+last=0
+
+fswatch src/js_* | while read _event; do
+    if [[ $((`date +%s` - last > $rate)) -eq 1 ]]; then
+       make
+       last=`date +%s`
+    fi
+done
