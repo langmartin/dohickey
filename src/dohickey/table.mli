@@ -9,3 +9,4 @@ val put : Item.t -> t -> t
 val puts : Item.t list -> t -> t * Item.t list
 val dims : t -> int * int
 val make_results : string -> string -> string -> t -> Item.t list
+val to_list : t -> Item.t list

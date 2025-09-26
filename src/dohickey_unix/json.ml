@@ -26,16 +26,18 @@ exception Invalid_type
 let item_of_json j =
   let open Dohickey.Item in
   let open Yojson.Safe.Util in
+  let jc = member "coda" j in
+  let jb = member "body" j in
   {
-    coda = coda_of_json j;
+    coda = coda_of_json jc;
     body = match j |> member "type" |> to_string with
-      | "text" -> Text {row = j |> member "row" |> to_int;
-                        col = j |> member "col" |> to_int;
-                        text = j |> member "text" |> to_string}
-      | "vote" -> Vote (vote_of_json j)
-      | "call" -> Call {id = j |> member "id" |> to_string}
-      | "count" -> Count {id = j |> member "id" |> to_string}
-      | "result" -> Result (vote_of_json j)
+      | "text" -> Text {row = jb |> member "row" |> to_int;
+                        col = jb |> member "col" |> to_int;
+                        text = jb |> member "text" |> to_string}
+      | "vote" -> Vote (vote_of_json jb)
+      | "call" -> Call {id = jb |> member "id" |> to_string}
+      | "count" -> Count {id = jb |> member "id" |> to_string}
+      | "result" -> Result (vote_of_json jb)
       | _ -> raise Invalid_type
   }
 
@@ -52,6 +54,9 @@ let item_to_json (i : Dohickey.Item.t) =
 let of_json j =
   let open Yojson.Safe.Util in
   j |> to_list |> List.map item_of_json
+
+let of_json_str s =
+  s |> Yojson.Safe.from_string |> of_json
 
 let to_json items =
   `List (List.map item_to_json items)

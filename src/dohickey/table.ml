@@ -61,6 +61,8 @@ let get_pos kind row col t =
  * let get_vote row col t = get_pos "vote"
  *)
 
+let to_list t = StringMap.to_list t.items |> List.map snd
+
 let get_votes t =
   let open List in
   t.items
