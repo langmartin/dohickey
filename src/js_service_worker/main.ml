@@ -27,6 +27,7 @@ let parse data =
   | None -> Jv.null
 
 let send item =
+  ignore @@ dbg "send" item;
   match state.ws with
   | Some ws -> Websocket.send_string ws item
   | None -> ()
@@ -64,10 +65,13 @@ let connect_ws () =
 
 let got_item item =
   put_item item;
-  (match Jv_item.of_item item with
-   | None -> ()
-   | Some jv ->
-     Jv.to_jstr jv |> send);
+  begin
+    match Jv_item.of_item item with
+    | None -> ()
+    | Some jv ->
+      let jv = Jv.of_list Fun.id [jv] in
+      send (Json.encode jv)
+  end;
   client_push item
 
 let rec recv_from_page e =

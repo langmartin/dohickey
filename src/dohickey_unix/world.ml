@@ -9,6 +9,9 @@ let broadcast items =
     (fun client ->
       Dream.send client (Json.to_json_str items))
 
+(* This doesn't seem right, don't I mean table ^ user id? A
+   reconnection from the same client should replace the old one and
+   table clients should be isolated *)
 let add_client websocket =
   let id = (Hashtbl.length the_clients) + 1 in
   Hashtbl.replace the_clients id websocket;
@@ -21,3 +24,9 @@ let puts table items =
   let (store', items') = Tables.puts table items !the_store in
   the_store := store';
   broadcast items'
+
+let gets table =
+  Tables.get table !the_store
+
+let tables () =
+  Tables.tables !the_store
