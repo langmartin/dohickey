@@ -45,7 +45,7 @@ let send_vote ev =
   | None -> ()
   | Some el ->
     at_vote btn el
-    |> Send.vote
+    |> Net.vote
 
 let call_one_vote id el =
   set_classes el [("voting", true)];
@@ -86,7 +86,7 @@ let editor_text el =
 let el_remove el = Some (El.remove el)
 
 let send_text text body =
-  Some (Send.text {body with text=text})
+  Some (Net.text {body with text=text})
 
 let send_text e =
   Ev.stop_propagation e;
