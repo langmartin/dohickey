@@ -72,7 +72,7 @@ let main () =
   on_click "#add-option" add_option;
   on_click "#add-goal" add_goal;
   Send.title "FIXME";
-  Console.(debug ["client hello"])
+  Console.info(["client hello"])
 
 let () =
   (* Wait for page load *)

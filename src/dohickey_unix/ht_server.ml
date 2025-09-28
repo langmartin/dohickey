@@ -29,6 +29,9 @@ let fetch_items table =
 
 let handle_client table websocket =
   let _client_id = World.add_client websocket in
+
+  let%lwt _ = Dream.send websocket (fetch_items table) in
+
   let rec loop () =
     match%lwt Dream.receive websocket with
     | Some items ->

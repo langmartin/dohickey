@@ -42,14 +42,17 @@ let item_of_json j =
   }
 
 let item_to_json (i : Dohickey.Item.t) =
-  let j = match i.body with
-    | Text i -> `Assoc [("row", `Int i.row); ("col", `Int i.col); ("text", `String i.text)]
-    | Vote i -> vote_to_json i
-    | Result i -> vote_to_json i
-    | Call i -> `Assoc [("id", `String i.id)]
-    | Count i -> `Assoc [("id", `String i.id)]
+  let (t, j) = match i.body with
+    | Text i -> "text",
+                `Assoc [("row", `Int i.row);
+                        ("col", `Int i.col);
+                        ("text", `String i.text)]
+    | Vote i -> "vote", vote_to_json i
+    | Result i -> "result", vote_to_json i
+    | Call i -> "call", `Assoc [("id", `String i.id)]
+    | Count i -> "count", `Assoc [("id", `String i.id)]
   in
-  `Assoc [("coda", coda_to_json i.coda); ("body", j)]
+  `Assoc [("coda", coda_to_json i.coda); ("body", j); ("type", `String t)]
 
 let of_json j =
   let open Yojson.Safe.Util in
