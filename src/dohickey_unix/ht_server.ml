@@ -22,8 +22,16 @@ let handle_items table items =
   |> Json.of_json
   |> World.puts table
 
+let fetch_items table =
+  World.gets table
+  |> Dohickey.Table.to_list
+  |> Json.to_json_str
+
 let handle_client table websocket =
   let _client_id = World.add_client websocket in
+
+  let%lwt _ = Dream.send websocket (fetch_items table) in
+
   let rec loop () =
     match%lwt Dream.receive websocket with
     | Some items ->
@@ -74,11 +82,16 @@ let start_server listen_ip listen_port =
          Dream.websocket (fun websocket -> handle_client table websocket);
       );
 
-    Dream.post "/a1/send/:table"
+    Dream.post "/a1/push/:table"
       (fun req ->
          let table = Dream.param req "table" in
          let%lwt items = Dream.body req in
          let%lwt () = handle_items table items in
          Dream.empty `OK);
+
+    Dream.get "/a1/pull/:table"
+      (fun req ->
+         let table = Dream.param req "table" in
+         Dream.json (fetch_items table));
 
   ]

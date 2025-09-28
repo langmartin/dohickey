@@ -27,7 +27,7 @@ let parse data =
   | None -> Jv.null
 
 let send item =
-  ignore @@ dbg "send" item;
+  Console.info(["send"; item]);
   match state.ws with
   | Some ws -> Websocket.send_string ws item
   | None -> ()
@@ -49,12 +49,17 @@ let put_item item =
 
 let recv_from_ws e =
   let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
-  let item = Jv_item.of_jv jv in
-  match item with
-  | Some item ->
-    put_item item;
-    client_push item
-  | None -> ()
+
+  let recv_item jv =
+    let item = Jv_item.of_jv jv in
+    match item with
+    | Some item ->
+      put_item item;
+      client_push item
+    | None -> ()
+  in
+
+  ignore @@ Jv.to_list recv_item jv
 
 (* can't do this until the table name is set from the client *)
 let connect_ws () =
@@ -74,19 +79,22 @@ let got_item item =
   end;
   client_push item
 
+let got_title title =
+  state.table <- title;
+  connect_ws();
+  client_push_title title
+
 let rec recv_from_page e =
   let open Js_common in
   let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
 
-  Console.(debug ["recv_from_page"; data]);
+  Console.(info ["recv_from_page"; data]);
 
   let req = Req.of_jv data in
   begin
     match req.body with
     | Some Title title ->
-      state.table <- title;
-      connect_ws();
-      client_push_title title
+      got_title title
     | Some Item item ->
       got_item item
     | Some _ -> ()
@@ -100,7 +108,7 @@ and recv_lp () =
   ()
 
 let main () =
-  Console.(debug ["worker hello"]);
+  Console.(info ["worker hello"]);
   recv_lp()
 
 let () = main ()

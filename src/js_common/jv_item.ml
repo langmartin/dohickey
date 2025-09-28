@@ -16,10 +16,10 @@ let coda_of_jv jv =
   {time; user}
 
 let of_jv jv =
-  let coda = jobj "coda" jv |> coda_of_jv in
+  let coda = Jv.get jv "coda" |> coda_of_jv in
+  let body = Jv.get jv "body" in
   match jstr "type" jv with
   | "text" ->
-    let body = Jv.get jv "body" in
     let row = jint "row" body in
     let col = jint "col" body in
     let text = jstr "text" body in
