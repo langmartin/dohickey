@@ -32,7 +32,7 @@ let spawn () =
   match spawn_worker () with
   | Error _e -> ()
   | Ok w ->
-    Net.set_worker w;
+    Send.set_worker w;
     recv_lp w
 
 (* Event handlers for 3 main table buttons *)
@@ -43,7 +43,7 @@ let start_vote ev =
   Console.(debug [str "start_vote"]);
   match El.parent btn with
   | None -> ()
-  | Some _el -> Net.call "FIXME"; ()
+  | Some _el -> Send.call "FIXME"; ()
 
 let goal_dims rows cols = (rows + 1, cols)
 let option_dims rows cols = (rows, cols + 1)
@@ -71,7 +71,7 @@ let main () =
   on_click "#votey" start_vote;
   on_click "#add-option" add_option;
   on_click "#add-goal" add_goal;
-  Net.title "FIXME";
+  Send.title "FIXME";
   Console.(debug ["client hello"])
 
 let () =
