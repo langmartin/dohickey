@@ -15,7 +15,7 @@ let dims_body jv =
   | _ -> None
 
 let item_body jv =
-  match Jv_item.of_jv jv with
+  match Jv_item.of_obj_jv jv with
   | Some item -> Some (Item item)
   | None -> None
 

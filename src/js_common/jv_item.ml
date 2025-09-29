@@ -15,7 +15,7 @@ let coda_of_jv jv =
   let user = jstr "user" jv in
   {time; user}
 
-let of_jv jv =
+let of_obj_jv jv =
   let coda = Jv.get jv "coda" |> coda_of_jv in
   let body = Jv.get jv "body" in
   match jstr "type" jv with
@@ -25,6 +25,10 @@ let of_jv jv =
     let text = jstr "text" body in
     Some {coda; body = Text {row; col; text}}
   | _ -> None
+
+let of_list_jv jv =
+  Jv.to_list of_obj_jv jv
+  |> List.concat_map Option.to_list
 
 let jv_of_coda coda =
   Jv.obj [|

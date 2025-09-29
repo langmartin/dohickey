@@ -51,7 +51,7 @@ let recv_from_ws e =
   let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
 
   let recv_item jv =
-    let item = Jv_item.of_jv jv in
+    let item = Jv_item.of_obj_jv jv in
     match item with
     | Some item ->
       put_item item;
@@ -68,7 +68,7 @@ let connect_ws () =
   state.ws <- Some ws;
   ()
 
-let got_item item =
+let got_local_item item =
   put_item item;
   begin
     match Jv_item.of_item item with
@@ -79,8 +79,22 @@ let got_item item =
   end;
   client_push item
 
+let got_item item =
+  ignore @@ Db.save_item state.table item;
+  got_local_item item
+
+let do_each f xs =
+  List.fold_left (fun _ x -> f x; ()) () xs
+
 let got_title title =
-  state.table <- title;
+  let table = Dohickey.Friendly.dohickey_name title in
+  state.table <- table;
+  ignore @@ begin
+    let open Lwt.Syntax in
+    let* xs = Db.load_table table in
+    do_each got_local_item xs;
+    Lwt.return ()
+  end;
   connect_ws();
   client_push_title title
 
@@ -88,7 +102,7 @@ let rec recv_from_page e =
   let open Js_common in
   let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
 
-  Console.(info ["recv_from_page"; data]);
+  Console.info(["recv_from_page"; data]);
 
   let req = Req.of_jv data in
   begin
