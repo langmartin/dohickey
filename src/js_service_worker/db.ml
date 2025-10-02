@@ -22,24 +22,33 @@ let _open_db table =
         db
     end
 
-let open_db _table = Database.open' ~version:1 db_name
+(* See https://github.com/openEngiadina/geopub/blob/main/src/geopub/database/store.ml
+   for an example of the author using their bindings *)
 
-let open_txn table =
-  let open Lwt.Syntax in
+let on_version_change table db =
+  Database.create_object_store db table
+
+let open_db _table =
+  Database.open' ~version:1 db_name
+
+open Lwt.Syntax
+
+let with_open_txn table f =
   let tb = Jstr.of_string table in
   let* db = Database.open' ~version:1 db_name in
-  let txn = Transaction.create db ~mode:ReadOnly [tb] in
-
+  let open Transaction in
+  let txn = create db ~mode:ReadWrite [tb] in
+  let os = object_store txn tb in
+  f os
 
 let load_table table =
-  let open Lwt.Syntax in
-  let open Transaction in
-  let os = object_store txn tb in
-  let* xs = ObjectStore.get_all os Jv.null in
-  xs
-  |> List.map Jv_item.of_obj_jv
-  |> List.concat_map Option.to_list
-  |> Lwt.return
+  with_open_txn table
+    (fun os ->
+       let* xs = ObjectStore.get_all os Jv.null in
+       xs
+       |> List.map Jv_item.of_obj_jv
+       |> List.concat_map Option.to_list
+       |> Lwt.return)
 
 let save_item table item =
   let open Lwt.Syntax in
