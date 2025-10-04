@@ -1,71 +1,47 @@
+open Brr
 open Indexeddb
 open Js_common
+open Lwt.Syntax
 
+let db_version = 1
 let db_name = Jstr.of_string "dohickey"
 
-open Brr
-
-let _open_db table =
-  let open Lwt.Syntax in
-  let open Database in
-  let* db = open' ~version:1 db_name in
-  let table = Jstr.of_string table in
-  let xs = object_store_names db in
-  Lwt.return
-    begin
-      match List.find_opt (Jstr.equal table) xs with
-      | Some _x ->
-        db
-      | None ->
-        Console.debug(["open_db"; "none"; db]);
-        let _ = create_object_store db table in
-        db
-    end
+let (>>=) = Option.bind
 
 (* See https://github.com/openEngiadina/geopub/blob/main/src/geopub/database/store.ml
    for an example of the author using their bindings *)
 
 let on_version_change table db =
-  Database.create_object_store db table
+  ignore @@ Database.create_object_store db table
 
-let open_db _table =
-  Database.open' ~version:1 db_name
+let open_db table =
+  let ovc = on_version_change table in
+  Database.open' ~version:db_version ~on_version_change:ovc db_name
 
-open Lwt.Syntax
-
-let with_open_txn table f =
-  let tb = Jstr.of_string table in
-  let* db = Database.open' ~version:1 db_name in
-  let open Transaction in
-  let txn = create db ~mode:ReadWrite [tb] in
-  let os = object_store txn tb in
-  f os
-
-let load_table table =
-  with_open_txn table
-    (fun os ->
-       let* xs = ObjectStore.get_all os Jv.null in
-       xs
-       |> List.map Jv_item.of_obj_jv
-       |> List.concat_map Option.to_list
-       |> Lwt.return)
-
-let save_item table item =
-  let open Lwt.Syntax in
-  let open Transaction in
+let open_os table =
   let tb = Jstr.of_string table in
   let* db = open_db tb in
-
-  Console.debug(["store"; db]);
-
+  let open Transaction in
   let txn = create db ~mode:ReadWrite [tb] in
-
   let os = object_store txn tb in
+  Lwt.return os
 
-  Console.debug(["store"; item]);
+let load_table table =
+  let* os = open_os table in
+  let* xs = ObjectStore.get_all os Jv.null in
+  xs
+  |> List.map Jv_item.of_obj_jv
+  |> List.concat_map Option.to_list
+  |> Lwt.return
 
-  match Jv_item.of_item item with
-  | Some jv ->
-      Console.debug(["store"; jv]);
-      ObjectStore.put os jv
-  | None -> Lwt.return Jv.null
+let save_item table item =
+  let* os = open_os table in
+  let key = Dohickey.Item.key item |> Jv.of_string in
+  Console.debug(["key"; key]);
+  let item = Js_common.Jv_item.of_item item in
+  let fin = Lwt.return_unit in
+  match item with
+  | Some item ->
+    let* _key = ObjectStore.put os ~key item in
+    fin
+  | None -> fin
