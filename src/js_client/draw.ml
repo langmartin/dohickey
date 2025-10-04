@@ -166,9 +166,7 @@ let make_cell row col =
 let sync_td parent row col =
   let id = make_id [row; col] in
   match find_el id with
-  | Some _el ->
-    ignore @@ "skip" |> dbg "find";
-    ()
+  | Some _el -> ()
   | None -> [make_cell row col] |> El.append_children parent
 
 let sync_cols ncols (row : int) =
