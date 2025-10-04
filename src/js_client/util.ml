@@ -4,10 +4,6 @@ let (>>=) = Option.bind
 
 let document_el = G.document |> Document.to_jv |> El.of_jv
 
-let dbg label obj =
-  Console.(debug ["dbg"; label; obj]);
-  obj
-
 let qsa ?(el=document_el) querySelector =
   let o = El.to_jv el in
   [| Jv.of_string querySelector |]
@@ -20,7 +16,7 @@ let qs1 ?(el=document_el) querySelector =
   | _ -> None
 
 let add_ev_listener event f el =
-  ignore @@ dbg "add_ev_listener" (event, el);
+  (* Console.debug(["add_ev_listener"; event; el]); *)
   let trg = El.as_target el in
   (* Save this value so we can detatch listeners? *)
   ignore @@ Ev.listen event f trg;

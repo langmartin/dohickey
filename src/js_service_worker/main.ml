@@ -16,10 +16,6 @@ let state = {
   data = Table.empty
 }
 
-let dbg label obj =
-  Console.(debug ["dbg"; label; obj]);
-  obj
-
 let parse data =
   let res = data |> Json.decode |> Result.to_option in
   match res with
@@ -40,7 +36,8 @@ let client_push item =
   let open Req in
   let dims = Table.dims state.data |> of_dims |> to_jv in
   Worker.G.post dims;
-  let item = item |> of_item |> to_jv |> dbg "client_push" in
+  let item = item |> of_item |> to_jv in
+  Console.debug(["client_push"; item]);
   Worker.G.post item
 
 let put_item item =
