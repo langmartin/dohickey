@@ -19,6 +19,7 @@ let rec recv_from_worker w ev =
     | Some (Dims (row, col)) -> Draw.dims (row, col)
     | Some Item item -> Draw.item item
     | Some Title title -> Draw.title title
+    | Some User user -> Draw.user user
     | None -> ()
   end;
   recv_lp w
@@ -71,7 +72,8 @@ let main () =
   on_click "#votey" start_vote;
   on_click "#add-option" add_option;
   on_click "#add-goal" add_goal;
-  Send.title "FIXME";
+  Send.title "Working Title";
+  Send.user "Tworker";
   Console.info(["client hello"])
 
 let () =

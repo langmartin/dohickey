@@ -41,3 +41,10 @@ let title title =
   |> of_title
   |> to_jv
   |> debug_post
+
+let user user =
+  let open Js_common.Req in
+  user
+  |> of_user
+  |> to_jv
+  |> debug_post

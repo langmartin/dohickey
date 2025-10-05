@@ -217,3 +217,8 @@ let title title =
   match qs1 "#title" with
   | Some el -> El.set_children el [El.txt' title]
   | None -> ()
+
+let user username =
+  match qs1 "#user" with
+  | Some el -> El.set_children el [El.txt' username]
+  | None -> ()

@@ -13,34 +13,42 @@ let make id = {empty with id = id}
 let values t =
   t.items |> StringMap.to_list |> List.map snd
 
-let put_item item m =
+let replacing item t =
   let open StringMap in
   let key = Item.key item in
-  match find_opt key m with
-  | None -> add key item m
+  match find_opt key t.items with
+  | None -> None
   | Some prev ->
     if Coda.compare prev.coda item.coda < 0 then
-      add key item m
+      Some prev
     else
-      m
+      None
 
-let put item t = {t with items = (put_item item t.items)}
+let is_stale t item =
+  let open StringMap in
+  let key = Item.key item in
+  match find_opt key t.items with
+  | None -> false
+  | Some prev -> Coda.compare prev.coda item.coda > 0
 
-let put_items items m =
-  List.fold_left (fun (m, l) item ->
-      let m' = put_item item m in
-      if m == m' then
-        (m, l)
-      else
-        (m', item :: l))
-    (m, [])
+let is_fresh t item = not (is_stale t item)
+
+let put_list items t =
+  let open StringMap in
+  let items = List.fold_left (fun m i ->
+      let key = Item.key i in
+      add key i m)
+    t.items
     items
+  in
+  {t with items}
 
-(** reduce [items] into table [t] returning the updated table and subset
-    of the items that are fresh by [coda] and the table *)
-let puts items t =
-  let m, fresh = put_items items t.items in
-  ({t with items = m}, fresh)
+let join item t =
+  let key = Item.key item in
+  if is_stale t item then
+    t
+  else
+    {t with items = (StringMap.add key item t.items)}
 
 let dims t =
   let max_dims _key item dims =

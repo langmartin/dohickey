@@ -5,13 +5,17 @@ open Dohickey
 open Js_common
 
 type t = {
+  mutable lamport : int64;
   mutable table : string;
+  mutable user : string;
   mutable ws : Websocket.t option;
   mutable data : Table.t
 }
 
 let state = {
+  lamport = Int64.of_int 0;
   table = "";
+  user = "";
   ws = None;
   data = Table.empty
 }
@@ -22,7 +26,7 @@ let parse data =
   | Some obj -> obj
   | None -> Jv.null
 
-let socket_send jv_list =
+let socket_send_jv jv_list =
   let jv = Jv.of_list Fun.id jv_list in
   let str = Json.encode jv in
   match state.ws with
@@ -31,11 +35,20 @@ let socket_send jv_list =
     Websocket.send_string ws str;
   | None -> ()
 
+let socket_send item =
+  match Jv_item.of_item item with
+  | None -> ()
+  | Some jv -> socket_send_jv [jv]
+
 let client_push_title title =
   let open Req in
   title |> of_title |> to_jv |> Worker.G.post
 
-let client_push item =
+let client_push_user user =
+  let open Req in
+  user |> of_user |> to_jv |> Worker.G.post
+
+let client_push_item item =
   let open Req in
   let dims = Table.dims state.data |> of_dims |> to_jv in
   Worker.G.post dims;
@@ -43,20 +56,48 @@ let client_push item =
   Console.debug(["client_push"; item]);
   Worker.G.post item
 
-let put_item item =
-  let data = Table.put item state.data in
-  state.data <- data
+let join_item item =
+  let data = state.data in
+  state.data <- Table.join item data
 
-let recv_item item =
-  put_item item;
-  client_push item
+let send_time() =
+  let t = Lamport.send state.lamport in
+  state.lamport <- t;
+  Lamport.sprint64 t
+
+let recv_time (item : Dohickey.Item.t) =
+  match Lamport.parse64 item.coda.time with
+  | Some m ->
+    let t = Lamport.recv state.lamport m in
+    state.lamport <- t
+  | None -> ()
+
+let push item =
+  client_push_item item;
+  socket_send item
+
+let save_push item =
+  Db.save_item state.table item;
+  push item
+
+let save_client_push item =
+  Db.save_item state.table item;
+  client_push_item item
+
+let recv_item on_fresh item =
+  recv_time item;
+  if Table.is_fresh state.data item then
+    on_fresh item
+  else
+    ();
+  join_item item
 
 let recv_from_ws e =
   let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
   let recv jv =
     let item = Jv_item.of_obj_jv jv in
     match item with
-    | Some item -> recv_item item
+    | Some item -> recv_item save_client_push item
     | None -> ()
   in
   ignore @@ Jv.to_list recv jv
@@ -68,27 +109,14 @@ let connect_ws () =
   state.ws <- Some ws;
   ()
 
-let got_local_item item =
-  let send item =
-    match Jv_item.of_item item with
-    | None -> ()
-    | Some jv -> socket_send [jv]
-  in
-  put_item item;
-  send item;
-  client_push item
-
-let got_item item =
-  ignore @@ Db.save_item state.table item;
-  got_local_item item
-
 let do_each f xs = List.fold_left (fun _ x -> f x; ()) () xs
+let got_db_item = recv_item push
 
 let init_db table =
   let init_db_callback table =
     let open Lwt.Syntax in
     let* xs = Db.load_table table in
-    do_each got_local_item xs;
+    do_each got_db_item xs;
     Lwt.return_unit
   in
   (* Without some delay, writing to the websocket immediately after
@@ -101,12 +129,25 @@ let init_db table =
   let f = Jv.callback ~arity:1 f in
   ignore @@ Jv.apply set_timeout Jv.[| f; of_int 100 |]
 
+let got_item item =
+  let time = send_time() in
+  let coda = Dohickey.Coda.({time; user = state.user}) in
+  let item = Dohickey.Item.({item with coda}) in
+  (* Like recv_item but unconditional, because I know this is fresh, and
+     avoiding recv_time. *)
+  save_push item;
+  join_item item
+
 let got_title title =
   let table = Dohickey.Friendly.dohickey_name title in
   state.table <- table;
   connect_ws();
   init_db table;
   client_push_title title
+
+let got_user user =
+  state.user <- user;
+  client_push_user user
 
 let rec recv_from_page e =
   let open Js_common in
@@ -119,6 +160,8 @@ let rec recv_from_page e =
     match req.body with
     | Some Title title ->
       got_title title
+    | Some User user ->
+      got_user user
     | Some Item item ->
       got_item item
     | Some _ -> ()

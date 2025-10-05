@@ -33,7 +33,7 @@ let load_table table =
   |> List.concat_map Option.to_list
   |> Lwt.return
 
-let save_item table item =
+let save_item_lwt table item =
   let* os = open_os table in
   let key = Dohickey.Item.key item |> Jv.of_string in
   let item = Js_common.Jv_item.of_item item in
@@ -43,3 +43,6 @@ let save_item table item =
     let* _key = ObjectStore.put os ~key item in
     fin
   | None -> fin
+
+let save_item table item =
+  ignore @@ save_item_lwt table item
