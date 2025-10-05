@@ -33,16 +33,48 @@ let load_table table =
   |> List.concat_map Option.to_list
   |> Lwt.return
 
-let save_item_lwt table item =
-  let* os = open_os table in
+type state = {
+  queue : Dohickey.Item.t Queue.t;
+  mutable running : bool
+}
+
+let state = {
+  queue = Queue.create();
+  running = false;
+}
+
+let dequeue() = Queue.take_opt state.queue
+
+let save_one_item os item =
   let key = Dohickey.Item.key item |> Jv.of_string in
-  let item = Js_common.Jv_item.of_item item in
-  let fin = Lwt.return_unit in
+  let item = Jv_item.of_item item in
   match item with
   | Some item ->
-    let* _key = ObjectStore.put os ~key item in
-    fin
-  | None -> fin
+    let* _ = ObjectStore.put os ~key item in
+    Lwt.return_unit
+  | None ->
+    Lwt.return_unit
+
+let rec drain os =
+  match dequeue() with
+  | None ->
+    state.running <- false;
+    Lwt.return_unit
+  | Some item ->
+    let* _ = save_one_item os item in
+    drain os
+
+let start_saving table =
+  if state.running then
+    ()
+  else
+    ignore @@
+    begin
+      state.running <- true;
+      let* os = open_os table in
+      drain os
+    end
 
 let save_item table item =
-  ignore @@ save_item_lwt table item
+  Queue.add item state.queue;
+  start_saving table

@@ -8,7 +8,6 @@ type t = {
   mutable lamport : int64;
   mutable table : string;
   mutable user : string;
-  mutable ws : Websocket.t option;
   mutable data : Table.t
 }
 
@@ -16,7 +15,6 @@ let state = {
   lamport = Int64.of_int 0;
   table = "";
   user = "";
-  ws = None;
   data = Table.empty
 }
 
@@ -26,19 +24,10 @@ let parse data =
   | Some obj -> obj
   | None -> Jv.null
 
-let socket_send_jv jv_list =
-  let jv = Jv.of_list Fun.id jv_list in
-  let str = Json.encode jv in
-  match state.ws with
-  | Some ws ->
-    Console.info(["socket_send"; str]);
-    Websocket.send_string ws str;
-  | None -> ()
-
 let socket_send item =
   match Jv_item.of_item item with
   | None -> ()
-  | Some jv -> socket_send_jv [jv]
+  | Some jv -> Connection.send [jv]
 
 let client_push_title title =
   let open Req in
@@ -103,11 +92,8 @@ let recv_from_ws e =
   ignore @@ Jv.to_list recv jv
 
 (* can't do this until the table name is set from the client *)
-let connect_ws () =
-  let ws = Websocket.create Jstr.(v "/a1/socket/" + v state.table) in
-  ignore (Ev.listen Message.Ev.message recv_from_ws (Websocket.as_target ws));
-  state.ws <- Some ws;
-  ()
+let connect_ws() =
+  Connection.connect recv_from_ws state.table
 
 let do_each f xs = List.fold_left (fun _ x -> f x; ()) () xs
 let got_db_item = recv_item push
