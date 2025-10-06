@@ -1,10 +1,14 @@
+static = static/js_client.js static/js_service_worker.js
+
 build_all: build static/js_client static/js_service_worker
 
 build:
+	touch $(static)
 	dune build
 
 # https://discuss.ocaml.org/t/js-of-ocaml-output-performs-considerably-worse-when-built-with-profile-release-flag/8862/15
 release: $(sources) Makefile
+	touch $(static)
 	dune build --profile=release
 
 release_all: release static/js_client static/js_service_worker

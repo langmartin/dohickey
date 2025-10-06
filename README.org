@@ -16,8 +16,8 @@ failures. It allows the application to run offline.
 
 1. [X] Connect with an open websocket
 2. [X] Client request/response
-4. [ ] Local storage idempotently
-5. [ ] Resend everything for anti-entropy
+3. [X] Local storage idempotently
+4. [X] Resend everything for anti-entropy
 
 *** Brr instead of sw_of_ocaml
 

@@ -3,6 +3,8 @@ open Bytes
 
 type clock = int64
 
+let empty = of_int 0
+
 let one = of_int 1
 
 let send clock = add clock one

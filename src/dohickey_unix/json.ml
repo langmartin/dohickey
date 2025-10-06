@@ -38,6 +38,7 @@ let item_of_json j =
       | "call" -> Call {id = jb |> member "id" |> to_string}
       | "count" -> Count {id = jb |> member "id" |> to_string}
       | "result" -> Result (vote_of_json jb)
+      | "title" -> Title (to_string jb)
       | _ -> raise Invalid_type
   }
 
@@ -51,6 +52,7 @@ let item_to_json (i : Dohickey.Item.t) =
     | Result i -> "result", vote_to_json i
     | Call i -> "call", `Assoc [("id", `String i.id)]
     | Count i -> "count", `Assoc [("id", `String i.id)]
+    | Title i -> "title", `String i
   in
   `Assoc [("coda", coda_to_json i.coda); ("body", j); ("type", `String t)]
 
@@ -65,4 +67,4 @@ let to_json items =
   `List (List.map item_to_json items)
 
 let to_json_str items =
-  items |> to_json |> Yojson.Basic.pretty_to_string
+  items |> to_json |> Yojson.Basic.to_string

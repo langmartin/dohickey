@@ -8,6 +8,7 @@ type body =
   | Count of call_body
   | Vote of Vote.t
   | Result of Vote.t
+  | Title of string
 
 type t = {coda: Coda.t; body: body}
 
@@ -34,6 +35,7 @@ let key item =
   | Result item -> key_result item.row item.col
   | Call item -> key_call item.id
   | Count item -> key_count item.id
+  | Title _ -> "title"
 
 let is_vote item =
   match item.body with
@@ -58,3 +60,7 @@ let id_of item =
   | Vote i -> i.id
   | Result i -> i.id
   | _ -> ""
+
+let of_title title user time =
+  let body = Title title in
+  {coda = {user; time}; body}

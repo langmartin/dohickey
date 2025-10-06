@@ -3,24 +3,16 @@
   <head>
     <title>dohickey</title>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
-    <style>
-      :root {
-          --bd: solid 1px #ddd
-      }
-      button { font-family: "cursive" }
-      table { border: var(--bd) }
-      th,td { padding: 1em; margin: 0; border: 0; }
-      th { border-right: var(--bd); }
-      #options th { border-bottom: var(--bd); border-right: 0; }
-    </style>
-    <script type="text/javascript" src="/static/js_client.js"></script>
+    <link rel="stylesheet" href="main.css"/>
+    <script type="text/javascript" src="js_client.js"></script>
+    <script type="text/javascript">main_table()</script>
   </head>
   <body>
     <h1>
       <span id="title">title</span>
-      <span id="user">user</span>
+      <span id="user">{{username}}</span>
     </h1>
     <table id="dohickey">
       <tr id="dh-0">

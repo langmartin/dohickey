@@ -23,9 +23,8 @@ let parse_id ids =
 *)
 
 let el_id el =
-  match El.at (Jstr.v "id") el with
-  | None -> None
-  | Some id -> Some (Jstr.to_string id)
+  El.at (Jstr.v "id") el
+  |>> Jstr.to_string
 
 let btn_rank el =
   let txt = El.text_content el |> Jstr.to_string in
@@ -53,7 +52,7 @@ let call_one_vote id el =
 
 let end_one_vote el =
   set_classes el [("voting", false)];
-  set_attrs el [("data-call", Gone)]
+  set_attrs el [("data-call", False)]
 
 let call_vote id = qsa "#dohickey .ballot-box" |> each (call_one_vote id)
 let end_vote() = qsa "#dohickey .ballot-box" |> each end_one_vote
@@ -81,46 +80,74 @@ let content_text el =
   qs1 ~el:el ".content" >>= el_text |> to_s
 
 let editor_text el =
-  qs1 ~el:el ".editor input" >>= el_value |> to_s
+  qs1 ~el:el ".editor [name=main]" >>= el_value |> to_s
+
+let main_text el =
+  qs1 ~el:el "[name=main]"
+  >>= el_value
+  |> to_s
 
 let el_remove el = Some (El.remove el)
 
 let send_text text body =
-  Some (Send.text {body with text=text})
+  Send.text {body with text=text}
 
-let send_text e =
-  Ev.stop_propagation e;
-  let el = find_cell e in
+let send_text ev =
+  Ev.stop_propagation ev;
+  Ev.prevent_default ev;
+  let el = find_cell ev in
   let text = editor_text el in
   (* Build and send the message *)
   el_id el
   >>= parse_id
-  >>= send_text text
+  |>> send_text text
   |> ignore;
 
   (* Remove the flag that prevents double editing *)
-  set_attrs el [(flag, Gone)];
+  set_attrs el [(flag, False)];
 
   (* Remove the editor *)
   qs1 ~el:el ".editor" >>= el_remove |> ignore
 
-let editable txt =
-  El.div ~at:[cls ["editor"]]
-    [El.input ~at:[At.type' (Jstr.v "text"); At.placeholder (Jstr.v txt)] ();
-     El.button
-       [El.txt' "send"]
-     |> add_ev_listener Ev.click send_text]
+let send_title ev =
+  Ev.stop_propagation ev;
+  Ev.prevent_default ev;
+  ev |> event_el |> main_text |> Send.title
 
-let lemme_edit e =
-  Ev.stop_propagation e;
-  let el = find_cell e in
+let after f g = fun ev -> f ev; g(); ()
+
+let main_attr txt =
+  [At.placeholder (Jstr.v txt);
+   At.name (Jstr.v "main")]
+
+let editable undo txt =
+  El.form ~at:[cls ["editor"]]
+    [El.textarea ~at:(main_attr txt)
+       [El.txt' txt];
+     El.button ~at:[At.type' (Jstr.v "submit")]
+       [El.txt' "send"]]
+  |> el_on_submit (after send_text undo)
+
+let editable_title undo txt =
+  El.form ~at:[cls ["editor"]]
+    [El.textarea ~at:(main_attr txt)
+       [El.txt' txt];
+     El.button ~at:[At.type' (Jstr.v "submit")]
+       [El.txt' "send"]]
+  |> el_on_submit (after send_title undo)
+
+let lemme_edit ev =
+  Ev.stop_propagation ev;
+  let el = find_cell ev in
   if at_bool flag el then
     ()
   else
     let text = content_text el in
+    let orig = El.children el in
+    let undo() = El.set_children el orig in
     set_attrs el [(flag, True)];
-    El.append_children el
-      [editable text]
+    El.set_children el
+      [editable undo text]
 
 (*
    Table
@@ -161,7 +188,7 @@ let make_cell row col =
      Style.th id row col
    else
      Style.td ~vote:send_vote id row col)
-  |> add_ev_listener Ev.click lemme_edit
+  |> el_on_click lemme_edit
 
 let sync_td parent row col =
   let id = make_id [row; col] in
@@ -197,6 +224,11 @@ let item_text (body : Item.text_body) (coda : Coda.t) =
 let item_call (body : Item.call_body) = call_vote body.id
 let item_count () = end_vote()
 
+let item_title title =
+  match qs1 "#title" with
+  | Some el -> El.set_children el [El.txt' title]
+  | None -> ()
+
 (*
    ======================================================================
    Received event handlers
@@ -212,11 +244,7 @@ let item (item : Item.t) =
   | Count _it -> item_count() (* TODO match the id? Maybe server already did *)
   | Vote _it -> ()
   | Result _it -> ()
-
-let title title =
-  match qs1 "#title" with
-  | Some el -> El.set_children el [El.txt' title]
-  | None -> ()
+  | Title it -> item_title it
 
 let user username =
   match qs1 "#user" with

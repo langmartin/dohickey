@@ -1,20 +1,6 @@
-let public = [
-  ("table", [%blob "../public/table.html"]);
-  ("index", [%blob "../public/index.html"]);
-  ("sign_in", [%blob "../public/sign-in.html"])
-]
-
-let html content =
-  fun _request ->
-  Dream.respond
-    ~headers:["content-type", "text/html"]
-    content
-
-let js content =
-  fun _request ->
-  Dream.respond
-    ~headers:["content-type", "application/json"]
-    content
+(*
+   Items are handled over the websocket.
+*)
 
 let handle_items table items =
   items
@@ -28,70 +14,97 @@ let fetch_items table =
   |> Json.to_json_str
 
 let handle_client table websocket =
-  let _client_id = World.add_client websocket in
-
+  let client_id = World.add_client websocket in
   let%lwt _ = Dream.send websocket (fetch_items table) in
-
   let rec loop () =
     match%lwt Dream.receive websocket with
     | Some items ->
       let%lwt () = handle_items table items in
       loop ()
     | None ->
-      (* FIXME this seems to happen early. World.stop_client client_id; *)
+      World.stop_client client_id;
       Dream.close_websocket websocket
   in
   loop ()
+
+let json_string_list xs =
+  let jstr s = `String s in
+  let jlst xs = `List (List.map jstr xs) in
+  xs
+  |> jlst
+  |> Yojson.Basic.to_string
+
+let create_table user name =
+  let open Dohickey in
+  let id = Friendly.dohickey_name name in
+  let ts = World.send() |> Hulc.sprint in
+  ignore @@ World.puts id [Item.of_title name user ts];
+  id
+
+(*
+   Authentication.
+*)
+
+let username_cookie = Public.username_cookie
+
+let dream_authentication inner_handler request =
+  match Dream.cookie request username_cookie with
+  | Some _username -> inner_handler request
+  | None -> Dream.respond ~code:302 ~headers:[("location", "/sign-in")] ""
+
+(*
+   Routing.
+*)
 
 let start_server listen_ip listen_port =
   Dream.serve ~interface:listen_ip ~port:listen_port
   @@ Dream.logger
   @@ Dream.origin_referrer_check
+  @@ Dream.set_secret "super duper secret"
   @@ Dream.router [
-
-    Dream.get "/index.html" (html (List.assoc "index" public));
-    Dream.get "/table.html" (html (List.assoc "table" public));
-    Dream.get "/sign-in.html" (html (List.assoc "sign_in" public));
-
-    (* FIXME for development only *)
-    Dream.get "/public/**" (Dream.static "src/public");
-    Dream.get "/static/**" (Dream.static "static");
-
+    Dream.get "/sign-in" (Public.html "sign-in.html");
     Dream.post "/sign-in"
       (fun request ->
          match%lwt Dream.form ~csrf:false request with
-         | `Ok ["username", username] ->
+         | `Ok ["username", username_cookie] ->
            let response = Dream.response ~code:302 "" in
-           Dream.set_cookie response request "username" username;
-           Dream.set_header response "location" "index.html";
+           Dream.set_cookie response request "username" username_cookie;
+           Dream.set_header response "location" "/a1/";
            Lwt.return response
 
          | _ -> Dream.empty `Bad_Request
       );
 
-    Dream.get "/a1/socket"
-      (fun request ->
-         match Dream.headers request "host" with
-         | host :: _ -> Dream.websocket (fun websocket -> handle_client host websocket);
-         | _ -> Dream.respond ~code:404 ""
-      );
+    Dream.scope "/a1" [dream_authentication] [
+      Dream.get "/" (Public.html "index.html");
+      Dream.get "/table" (Public.html "table.html");
 
-    Dream.get "/a1/socket/:table"
-      (fun req ->
-         let table = Dream.param req "table" in
-         Dream.websocket (fun websocket -> handle_client table websocket);
-      );
+      Dream.get "tables"
+        (fun _request ->
+           Dream.respond
+             ~headers:["content-type", "application/json"]
+             (World.tables() |> json_string_list));
 
-    Dream.post "/a1/push/:table"
-      (fun req ->
-         let table = Dream.param req "table" in
-         let%lwt items = Dream.body req in
-         let%lwt () = handle_items table items in
-         Dream.empty `OK);
+      Dream.post "/tables"
+        (fun request ->
+           match%lwt Dream.form ~csrf:false request with
+           | `Ok ["name", name] ->
+             (match Dream.cookie request username_cookie with
+              | Some user ->
+                let id = create_table user name in
+                Dream.respond
+                  ~headers:["content-type", "application/json"]
+                  (json_string_list [id])
+              | None -> Dream.empty `Bad_Request)
+           | _ -> Dream.empty `Bad_Request);
 
-    Dream.get "/a1/pull/:table"
-      (fun req ->
-         let table = Dream.param req "table" in
-         Dream.json (fetch_items table));
-
+      Dream.get "/main.css" (Public.css "main.css");
+      Dream.get "/js_client.js" (Public.static_js "js_client.js");
+      Dream.get "/js_service_worker.js" (Public.static_js "js_service_worker.js");
+      Dream.get "/socket/:table"
+        (fun req ->
+           let table = Dream.param req "table" in
+           Dream.websocket (fun websocket -> handle_client table websocket);
+        );
+    ];
   ]

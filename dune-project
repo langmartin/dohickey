@@ -28,6 +28,7 @@
           js_of_ocaml
           js_of_ocaml-ppx
           jsont
+          mustache
           (ocaml (>= 5.3.0))
           ppx_blob
           sqlite3

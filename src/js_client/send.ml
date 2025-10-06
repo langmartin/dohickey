@@ -35,10 +35,16 @@ let call id =
   let body = Item.Call {id} in
   post_item {coda; body}
 
-let title title =
+let title text =
+  let open Dohickey in
+  let coda = Coda.empty in
+  let body = Item.Title text in
+  post_item {coda; body}
+
+let table_id id =
   let open Js_common.Req in
-  title
-  |> of_title
+  id
+  |> of_init
   |> to_jv
   |> debug_post
 

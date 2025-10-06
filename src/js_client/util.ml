@@ -1,6 +1,7 @@
 open Brr
 
 let (>>=) = Option.bind
+let (|>>) o f = (Option.map f) o
 
 let document_el = G.document |> Document.to_jv |> El.of_jv
 
@@ -12,7 +13,7 @@ let qsa ?(el=document_el) querySelector =
 
 let qs1 ?(el=document_el) querySelector =
   match qsa ~el:el querySelector with
-  | [el] -> Some el
+  | el :: _ -> Some el
   | _ -> None
 
 let add_ev_listener event f el =
@@ -21,6 +22,25 @@ let add_ev_listener event f el =
   (* Save this value so we can detatch listeners? *)
   ignore @@ Ev.listen event f trg;
   el
+
+let el_on_submit f el =
+  let ev_submit = Ev.Type.void (Jstr.v "submit") in
+  add_ev_listener ev_submit f el
+
+let on_submit qs f =
+  qsa qs |> List.map (el_on_submit f) |> ignore
+
+let el_on_click f el =
+  add_ev_listener Ev.click f el
+
+let on_click qs f =
+  qsa qs |> List.map (el_on_click f) |> ignore
+
+let on_load thunk =
+  (* Wait for page load *)
+  ignore @@
+  Fut.bind (Ev.next Ev.load (Window.as_target G.window)) @@ fun _ev -> thunk();
+  Fut.return()
 
 let repeatedly f n =
   let open Seq in
@@ -43,14 +63,14 @@ let set_classes el xs =
     ()
     xs
 
-type attr_v = Int of int | Str of string | True | Gone
+type attr_v = Int of int | Str of string | True | False
 
 let set_attrs el xs =
   let at_v x = match x with
     | Int x -> Some (Jstr.of_int x)
     | Str x -> Some (Jstr.of_string x)
     | True -> Some Jstr.empty
-    | Gone -> None
+    | False -> None
   in
   List.fold_left (fun _ (c, v) ->
       El.set_at (Jstr.v c) (at_v v) el)
@@ -86,3 +106,6 @@ let at_bool prop el =
   match El.at (Jstr.v prop) el with
   | Some _ -> true
   | None -> false
+
+let el_value_content el =
+  at_str "value" el

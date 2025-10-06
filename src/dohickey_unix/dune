@@ -1,7 +1,7 @@
 (library
  (name dohickey_unix)
 
- (libraries yojson dream sqlite3 cmdliner dohickey)
+ (libraries yojson dream sqlite3 cmdliner dohickey mustache)
 
  (preprocess
   (pps ppx_blob lwt_ppx))
@@ -10,4 +10,6 @@
   (file ../public/index.html)
   (file ../public/sign-in.html)
   (file ../public/table.html)
-  (file ../public/page.js)))
+  (file ../public/main.css)
+  (file ../../static/js_client.js)
+  (file ../../static/js_service_worker.js)))

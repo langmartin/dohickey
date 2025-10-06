@@ -29,7 +29,7 @@ let load_table table =
   let* os = open_os table in
   let* xs = ObjectStore.get_all os Jv.null in
   xs
-  |> List.map Jv_item.of_obj_jv
+  |> List.map Jv_item.obj_to_item
   |> List.concat_map Option.to_list
   |> Lwt.return
 
@@ -45,15 +45,12 @@ let state = {
 
 let dequeue() = Queue.take_opt state.queue
 
+(* TODO join here too, since saved stale state is bad *)
 let save_one_item os item =
   let key = Dohickey.Item.key item |> Jv.of_string in
   let item = Jv_item.of_item item in
-  match item with
-  | Some item ->
-    let* _ = ObjectStore.put os ~key item in
-    Lwt.return_unit
-  | None ->
-    Lwt.return_unit
+  let* _ = ObjectStore.put os ~key item in
+  Lwt.return_unit
 
 let rec drain os =
   match dequeue() with

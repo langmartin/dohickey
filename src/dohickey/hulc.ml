@@ -10,8 +10,24 @@ type t = {
   node : string
 }
 
-let sprint clock node_id =
-  Hlc.sprint64 clock ^ node_id
+let init node =
+  let open Hlc in
+  let time = Hlc.init (time_ms()) in
+  {time; node}
+
+let send (local : t) =
+  let open Hlc in
+  let time = send (time_ms()) local.time in
+  {local with time}
+
+let recv (local : t) (remote : t) =
+  let open Hlc in
+  let time = recv (time_ms()) local.time remote.time in
+  {local with time}
+
+let sprint clock =
+  let {time; node} = clock in
+  Hlc.sprint64 time ^ node
 
 let split_opt serialized : split option =
   match String.split_on_char '-' serialized with

@@ -1,0 +1,19 @@
+:root {
+    --bd-color: #ddd;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        background: #111;
+        color: #fff;
+        --bd-color: #333;
+    }
+}
+:root {
+    --bd: solid 1px var(--bd-color);
+}
+
+button { font-family: "cursive" }
+table { border: var(--bd) }
+th,td { padding: 1em; margin: 0; border: 0; }
+th { border-right: var(--bd); }
+#options th { border-bottom: var(--bd); border-right: 0; }

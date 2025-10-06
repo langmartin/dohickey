@@ -1,0 +1,6 @@
+* feat: edit the title and user
+
+- [ ] sign-in sets the user cookie and directs to index
+- [ ] index lists tables and allows creating a new one
+- [ ] title is an editable field which does not change the URL
+- [ ] read the user from a cookie controlled by the server

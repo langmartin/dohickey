@@ -24,26 +24,24 @@ let parse data =
   | Some obj -> obj
   | None -> Jv.null
 
-let socket_send item =
-  match Jv_item.of_item item with
-  | None -> ()
-  | Some jv -> Connection.send [jv]
-
-let client_push_title title =
-  let open Req in
-  title |> of_title |> to_jv |> Worker.G.post
+let socket_send items =
+  items
+  |> List.map Jv_item.of_item
+  |> Connection.send
 
 let client_push_user user =
   let open Req in
   user |> of_user |> to_jv |> Worker.G.post
 
-let client_push_item item =
+let do_each f xs = List.fold_left (fun _ x -> f x; ()) () xs
+
+let client_push_items items =
   let open Req in
   let dims = Table.dims state.data |> of_dims |> to_jv in
   Worker.G.post dims;
-  let item = item |> of_item |> to_jv in
-  Console.debug(["client_push"; item]);
-  Worker.G.post item
+  items
+  |> List.map (fun item -> item |> of_item |> to_jv)
+  |> do_each Worker.G.post
 
 let join_item item =
   let data = state.data in
@@ -61,48 +59,47 @@ let recv_time (item : Dohickey.Item.t) =
     state.lamport <- t
   | None -> ()
 
-let push item =
-  client_push_item item;
-  socket_send item
+let push items =
+  client_push_items items;
+  socket_send items
 
 let save_push item =
   Db.save_item state.table item;
-  push item
+  push [item]
 
-let save_client_push item =
-  Db.save_item state.table item;
-  client_push_item item
-
-let recv_item on_fresh item =
-  recv_time item;
-  if Table.is_fresh state.data item then
-    on_fresh item
-  else
-    ();
-  join_item item
+let recv_items ?(save=true) items =
+  let recv_item item =
+    recv_time item;
+    (* Keep save in here so that we only save the freshest, even when
+       this list of items has stale versions mixed with their
+       replacements. *)
+    if Table.is_fresh state.data item && save then
+      Db.save_item state.table item;
+    join_item item
+  in
+  do_each recv_item items
 
 let recv_from_ws e =
   let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
-  let recv jv =
-    let item = Jv_item.of_obj_jv jv in
-    match item with
-    | Some item -> recv_item save_client_push item
-    | None -> ()
+  let items = Jv.to_list Jv_item.obj_to_item jv
+    |> List.filter Option.is_some
+    |> List.map Option.get
+    (* Reduce would be more accurate in case some of these override others. *)
+    |> List.filter (Table.is_fresh state.data)
   in
-  ignore @@ Jv.to_list recv jv
+  recv_items items;
+  client_push_items items
 
 (* can't do this until the table name is set from the client *)
 let connect_ws() =
   Connection.connect recv_from_ws state.table
 
-let do_each f xs = List.fold_left (fun _ x -> f x; ()) () xs
-let got_db_item = recv_item push
-
 let init_db table =
   let init_db_callback table =
     let open Lwt.Syntax in
     let* xs = Db.load_table table in
-    do_each got_db_item xs;
+    recv_items ~save:false xs;
+    push xs;
     Lwt.return_unit
   in
   (* Without some delay, writing to the websocket immediately after
@@ -124,12 +121,10 @@ let got_item item =
   save_push item;
   join_item item
 
-let got_title title =
-  let table = Dohickey.Friendly.dohickey_name title in
-  state.table <- table;
+let got_init table_id =
+  state.table <- table_id;
   connect_ws();
-  init_db table;
-  client_push_title title
+  init_db table_id
 
 let got_user user =
   state.user <- user;
@@ -138,14 +133,12 @@ let got_user user =
 let rec recv_from_page e =
   let open Js_common in
   let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
-
-  Console.info(["recv_from_page"; data]);
-
+  Console.info(["recv_from_client"; data]);
   let req = Req.of_jv data in
   begin
     match req.body with
-    | Some Title title ->
-      got_title title
+    | Some Init table_id ->
+      got_init table_id
     | Some User user ->
       got_user user
     | Some Item item ->
