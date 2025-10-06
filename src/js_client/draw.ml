@@ -53,7 +53,7 @@ let call_one_vote id el =
 
 let end_one_vote el =
   set_classes el [("voting", false)];
-  set_attrs el [("data-call", Gone)]
+  set_attrs el [("data-call", False)]
 
 let call_vote id = qsa "#dohickey .ballot-box" |> each (call_one_vote id)
 let end_vote() = qsa "#dohickey .ballot-box" |> each end_one_vote
@@ -99,7 +99,7 @@ let send_text e =
   |> ignore;
 
   (* Remove the flag that prevents double editing *)
-  set_attrs el [(flag, Gone)];
+  set_attrs el [(flag, False)];
 
   (* Remove the editor *)
   qs1 ~el:el ".editor" >>= el_remove |> ignore

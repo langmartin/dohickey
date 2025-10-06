@@ -43,14 +43,14 @@ let set_classes el xs =
     ()
     xs
 
-type attr_v = Int of int | Str of string | True | Gone
+type attr_v = Int of int | Str of string | True | False
 
 let set_attrs el xs =
   let at_v x = match x with
     | Int x -> Some (Jstr.of_int x)
     | Str x -> Some (Jstr.of_string x)
     | True -> Some Jstr.empty
-    | Gone -> None
+    | False -> None
   in
   List.fold_left (fun _ (c, v) ->
       El.set_at (Jstr.v c) (at_v v) el)
