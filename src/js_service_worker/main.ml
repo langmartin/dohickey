@@ -31,7 +31,7 @@ let socket_send item =
 
 let client_push_title title =
   let open Req in
-  title |> of_title |> to_jv |> Worker.G.post
+  title |> of_title Clear |> to_jv |> Worker.G.post
 
 let client_push_user user =
   let open Req in

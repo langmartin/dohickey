@@ -107,7 +107,7 @@ let send_text e =
   (* Remove the editor *)
   qs1 ~el:el ".editor" >>= el_remove |> ignore
 
-let send_title ev =
+let _send_title ev =
   Ev.stop_propagation ev;
   let el = event_el ev in
   let txt = main_text el in
@@ -127,7 +127,7 @@ let editable txt =
        [El.txt' "send"]
      |> add_ev_listener Ev.click send_text]
 
-let editable_title txt =
+let _editable_title txt =
   El.form ~at:[cls ["editor"]]
     [El.textarea ~at:[At.type' (Jstr.v "text"); At.placeholder (Jstr.v txt)]
        [El.txt' txt];
