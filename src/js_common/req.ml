@@ -36,8 +36,14 @@ let of_dims (rows, cols) =
 let of_item item =
   { path = "item"; body = Some (Item item) }
 
-let of_title title =
-  { path = "title"; body = Some (Title title) }
+type op = Copy | Clear
+
+let of_title op text =
+  let path = match op with
+    | Copy -> "title/copy"
+    | Clear -> "title/clear"
+  in
+  { path; body = Some (Title text) }
 
 let of_user user =
   { path = "user"; body = Some (User user) }

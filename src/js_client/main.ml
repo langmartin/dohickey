@@ -72,7 +72,6 @@ let main () =
   on_click "#votey" start_vote;
   on_click "#add-option" add_option;
   on_click "#add-goal" add_goal;
-  Send.title "Working Title";
   Send.user "Tworker";
   Console.info(["client hello"])
 

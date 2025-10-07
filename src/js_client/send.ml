@@ -35,10 +35,12 @@ let call id =
   let body = Item.Call {id} in
   post_item {coda; body}
 
-let title title =
+type op = Js_common.Req.op
+
+let title (op : op) title =
   let open Js_common.Req in
   title
-  |> of_title
+  |> of_title op
   |> to_jv
   |> debug_post
 

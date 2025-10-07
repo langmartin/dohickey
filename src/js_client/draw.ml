@@ -83,6 +83,9 @@ let content_text el =
 let editor_text el =
   qs1 ~el:el ".editor input" >>= el_value |> to_s
 
+let main_text el =
+  qs1 ~el:el "input[name=main]" >>= el_value |> to_s
+
 let el_remove el = Some (El.remove el)
 
 let send_text text body =
@@ -104,14 +107,35 @@ let send_text e =
   (* Remove the editor *)
   qs1 ~el:el ".editor" >>= el_remove |> ignore
 
+let send_title ev =
+  Ev.stop_propagation ev;
+  let el = event_el ev in
+  let txt = main_text el in
+  let submitter jv = Jv.get jv "submitter" |> El.of_jv |> at_str "name" in
+  let btn = ev |> Ev.to_jv |> submitter in
+  let open Send in
+  if btn == "clear" then
+    title Clear txt
+  else
+    title Copy txt
+
 let editable txt =
-  El.div ~at:[cls ["editor"]]
-    [El.input ~at:[At.type' (Jstr.v "text"); At.placeholder (Jstr.v txt)] ();
-     El.button
+  El.form ~at:[cls ["editor"]]
+    [El.textarea ~at:[At.type' (Jstr.v "text"); At.placeholder (Jstr.v txt)]
+       [El.txt' txt];
+     El.button ~at:[At.type' (Jstr.v "submit")]
        [El.txt' "send"]
      |> add_ev_listener Ev.click send_text]
 
-let lemme_edit e =
+let editable_title txt =
+  El.form ~at:[cls ["editor"]]
+    [El.textarea ~at:[At.type' (Jstr.v "text"); At.placeholder (Jstr.v txt)]
+       [El.txt' txt];
+     El.button ~at:[At.type' (Jstr.v "submit")]
+       [El.txt' "send"]
+     |> add_ev_listener Ev.click send_text]
+
+let lemme_edit editable e =
   Ev.stop_propagation e;
   let el = find_cell e in
   if at_bool flag el then
@@ -119,7 +143,7 @@ let lemme_edit e =
   else
     let text = content_text el in
     set_attrs el [(flag, True)];
-    El.append_children el
+    El.set_children el
       [editable text]
 
 (*
@@ -161,7 +185,7 @@ let make_cell row col =
      Style.th id row col
    else
      Style.td ~vote:send_vote id row col)
-  |> add_ev_listener Ev.click lemme_edit
+  |> add_ev_listener Ev.click (lemme_edit editable)
 
 let sync_td parent row col =
   let id = make_id [row; col] in
