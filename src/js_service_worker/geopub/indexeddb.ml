@@ -31,6 +31,7 @@ module KeyRange = struct
   let lower_bound v = Jv.call idbkeyrange "lowerBound" [| v |]
   let bound lower upper = Jv.call idbkeyrange "bound" [| lower; upper |]
   let only v = Jv.call idbkeyrange "only" [| v |]
+  let to_jv v = v
 end
 
 module Cursor = struct
@@ -124,6 +125,11 @@ module ObjectStore = struct
     Jv.call object_store "get" [| key |]
     |> Request.to_lwt
     >|= Jv.to_option (fun x -> x)
+
+  let delete object_store key =
+    Jv.call object_store "delete" [| key |]
+    |> Request.to_lwt
+    >|= (fun _v -> true)
 
   let get_all object_store ?count query =
     match count with

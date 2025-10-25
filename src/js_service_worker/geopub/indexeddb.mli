@@ -10,6 +10,7 @@ module KeyRange : sig
   val lower_bound : Jv.t -> t
   val bound : Jv.t -> Jv.t -> t
   val only : Jv.t -> t
+  val to_jv : t -> Jv.t
 end
 
 module Cursor : sig
@@ -64,6 +65,9 @@ module ObjectStore : sig
   (** https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/put *)
 
   val get : t -> Jv.t -> Jv.t option Lwt.t
+  (** https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/get *)
+
+  val delete : t -> Jv.t -> bool Lwt.t
   (** https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/get *)
 
   val get_all : t -> ?count:int -> Jv.t -> Jv.t list Lwt.t

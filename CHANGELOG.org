@@ -1,6 +1,25 @@
+* feat: keep some or all stale history items and display them
+
+* fix: dream send and recv in the same place to avoid crashing
+
+See https://github.com/camlworks/dream/issues/230
+
+- [ ] workaround the crash by doing recv and send in the same place so
+  that we can always do recv before send, minimizing the crash window.
+
+* fix: indexdb needs to store multiple tables
+
+- [X] table id stored and queried with items so we can use one object
+  store, since object store can only be created on version changes.
+- [X] create an index on table name
+- [X] save items with table name
+- [X] load items with keyrange query for table name
+- [X] use the hulc for the item key
+- [X] support deleting items
+
 * feat: edit the title and user
 
-- [ ] sign-in sets the user cookie and directs to index
+- [X] sign-in sets the user cookie and directs to index
 - [ ] index lists tables and allows creating a new one
-- [ ] title is an editable field which does not change the URL
-- [ ] read the user from a cookie controlled by the server
+- [X] title is an editable field which does not change the URL
+- [X] read the user from a cookie controlled by the server
