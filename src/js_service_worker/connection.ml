@@ -21,6 +21,13 @@ let state = {
 
 let dequeue() = Queue.take_opt state.queue
 
+let ping_message = Jv.obj [|"ping", Jv.of_bool true|]
+
+let is_ping ms =
+  match ms with
+  | [m] -> Jv.equal m ping_message
+  | _ -> false
+
 let send ms =
   let jv = Jv.of_list Fun.id ms in
   let str = Json.encode jv in
@@ -32,7 +39,8 @@ let send ms =
         Websocket.send_string ws str
       end
     else
-      Queue.add ms state.queue
+      if not (is_ping ms) then
+        Queue.add ms state.queue
   | None ->
     Queue.add ms state.queue
 
@@ -45,6 +53,16 @@ let rec drain() =
     drain()
   | None ->
     ()
+
+let rec app_ping () =
+  send [ping_message];
+  ping_every()
+and ping_every () =
+  let set_timeout = Jv.get Jv.global "setTimeout" in
+  let f = Jv.callback ~arity:1 app_ping in
+  ignore @@ Jv.apply set_timeout Jv.[| f; of_int 5000 |]
+
+(* Receive *)
 
 let with_handler event_type handler ws =
   ignore @@
@@ -64,6 +82,7 @@ let with_mesg handler ws =
     ws
 
 let rec on_close _ev =
+  (* TODO back off *)
   reconnect()
 and reconnect() =
   let ws = create Jstr.(v "/a1/socket/" + v state.table)
@@ -76,4 +95,5 @@ and reconnect() =
 let connect recv table =
   state.table <- table;
   state.recv <- Some recv;
+  app_ping();
   reconnect()

@@ -2,30 +2,9 @@
    Items are handled over the websocket.
 *)
 
-let handle_items table items =
-  items
-  |> Yojson.Safe.from_string
-  |> Json.of_json
-  |> World.puts table
-
-let fetch_items table =
-  World.gets table
-  |> Dohickey.Table.to_list
-  |> Json.to_json_str
-
 let handle_client table websocket =
-  let client_id = World.add_client websocket in
-  let%lwt _ = Dream.send websocket (fetch_items table) in
-  let rec loop () =
-    match%lwt Dream.receive websocket with
-    | Some items ->
-      let%lwt () = handle_items table items in
-      loop ()
-    | None ->
-      World.stop_client client_id;
-      Dream.close_websocket websocket
-  in
-  loop ()
+  let client = Client.create table websocket in
+  Client_runner.start client
 
 let json_string_list xs =
   let jstr s = `String s in
@@ -104,7 +83,7 @@ let start_server listen_ip listen_port =
       Dream.get "/socket/:table"
         (fun req ->
            let table = Dream.param req "table" in
-           Dream.websocket (fun websocket -> handle_client table websocket);
+           Dream.websocket (handle_client table);
         );
     ];
   ]

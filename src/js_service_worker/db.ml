@@ -52,7 +52,7 @@ let load_table table =
   let* db = open_db() in
   let txn = Transaction.create db ~mode:ReadOnly [db_name] in
   let os = Transaction.object_store txn db_name in
-  let idx = ObjectStore.index os (Jstr.v table) in
+  let idx = ObjectStore.index os (Jstr.v "table") in
   let key = KeyRange.only (Jv.of_string table) |> KeyRange.to_jv in
   let* xs = Index.get_all idx key in
   xs
@@ -67,9 +67,6 @@ let save_one_item os (table, item) =
   let key = item.coda.time |> Jv.of_string in
   let item = Jv_item.of_item item in
   Jv.set item "table" table;
-
-  Brr.Console.debug ["SAVE", item];
-
   let* _ = ObjectStore.put os ~key item in
   Lwt.return_unit
 
@@ -91,7 +88,7 @@ let rec drain os =
 
 let start_saving() =
   if state.running || not state.ready then
-    Brr.Console.debug ["START"; state.running; state.ready]
+    ()
   else
     ignore @@
     begin

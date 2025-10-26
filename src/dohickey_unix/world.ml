@@ -2,15 +2,15 @@ open Dohickey
 
 let the_clock = ref (Hulc.init (Node_id.make_id()))
 let the_store = ref Tables.empty
-let the_clients : (int, Dream.websocket) Hashtbl.t = Hashtbl.create 20
+let the_clients : (int, Client.t) Hashtbl.t = Hashtbl.create 20
+
+let do_each f xs =
+  Seq.fold_left (fun _ x -> f x; ()) () xs
 
 let broadcast items =
   the_clients
   |> Hashtbl.to_seq_values
-  |> List.of_seq
-  |> Lwt_list.iter_p
-    (fun client ->
-       Dream.send client (Json.to_json_str items))
+  |> do_each (Client.send_to items)
 
 (* This doesn't seem right, don't I mean table ^ user id? A
    reconnection from the same client should replace the old one and

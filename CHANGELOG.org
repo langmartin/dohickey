@@ -1,13 +1,31 @@
-* feat: keep some or all stale history items and display them
+* Upcoming
 
-* fix: dream send and recv in the same place to avoid crashing
+** fix: client websocket disconnects other websockets for that client
 
-See https://github.com/camlworks/dream/issues/230
+** feat: keep some or all stale history items and display them
 
-- [ ] workaround the crash by doing recv and send in the same place so
-  that we can always do recv before send, minimizing the crash window.
+* Complete
 
-* fix: indexdb needs to store multiple tables
+** fix: dream send and recv in the same place to avoid crashing
+
+See https://github.com/camlworks/dream/issues/230 and
+https://github.com/camlworks/dream/issues/378
+
+Workaround the crash by doing recv and send in the same place so that
+we can always do recv before send, minimizing the crash window.
+
+- [X] add client with a queue for outbound messages
+- [X] client runner loop reads and sends when not empty
+- [X] world holds the wrapped websockets
+
+After making these changes, it's clear that without read timeouts, the
+best I can do is make broadcast only when the client sends. I can do
+an LWT timeout to force close and reopen the websocket, but that's a
+lot of overhead; timing out without closing the socket causes the next
+read to fail. For now, I've elected to send application level pings
+from the brower to get the loop to disconnect.
+
+** fix: indexdb needs to store multiple tables
 
 - [X] table id stored and queried with items so we can use one object
   store, since object store can only be created on version changes.
@@ -17,7 +35,7 @@ See https://github.com/camlworks/dream/issues/230
 - [X] use the hulc for the item key
 - [X] support deleting items
 
-* feat: edit the title and user
+** feat: edit the title and user
 
 - [X] sign-in sets the user cookie and directs to index
 - [ ] index lists tables and allows creating a new one

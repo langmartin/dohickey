@@ -97,6 +97,7 @@ let connect_ws() =
 let init_db table =
   let init_db_callback table =
     let open Lwt.Syntax in
+    Console.debug ["TIMEOUT"];
     let* xs = Db.load_table table in
     recv_items ~save:false xs;
     push xs;

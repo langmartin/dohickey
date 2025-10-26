@@ -60,6 +60,9 @@ let of_json j =
   let open Yojson.Safe.Util in
   j |> to_list |> List.map item_of_json
 
+let of_list_json jss =
+  List.map item_of_json jss
+
 let of_json_str s =
   s |> Yojson.Safe.from_string |> of_json
 
