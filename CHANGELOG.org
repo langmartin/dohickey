@@ -1,10 +1,14 @@
 * Upcoming
 
-** fix: client websocket disconnects other websockets for that client
-
 ** feat: keep some or all stale history items and display them
 
 * Complete
+
+** fix: client websocket disconnects other websockets for that client
+
+- [X] hashtable by username
+- [X] username in the client
+- [X] close existing client first
 
 ** fix: dream send and recv in the same place to avoid crashing
 

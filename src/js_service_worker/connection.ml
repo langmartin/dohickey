@@ -34,10 +34,7 @@ let send ms =
   match state.ws with
   | Some ws ->
     if ready_state ws == 1 then
-      begin
-        Console.info(["socket_send"; str]);
-        Websocket.send_string ws str
-      end
+      Websocket.send_string ws str
     else
       if not (is_ping ms) then
         Queue.add ms state.queue

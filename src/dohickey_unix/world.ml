@@ -2,7 +2,7 @@ open Dohickey
 
 let the_clock = ref (Hulc.init (Node_id.make_id()))
 let the_store = ref Tables.empty
-let the_clients : (int, Client.t) Hashtbl.t = Hashtbl.create 20
+let the_clients : (string, Client.t) Hashtbl.t = Hashtbl.create 20
 
 let do_each f xs =
   Seq.fold_left (fun _ x -> f x; ()) () xs
@@ -15,10 +15,13 @@ let broadcast items =
 (* This doesn't seem right, don't I mean table ^ user id? A
    reconnection from the same client should replace the old one and
    table clients should be isolated *)
-let add_client websocket =
-  let id = (Hashtbl.length the_clients) + 1 in
-  Hashtbl.replace the_clients id websocket;
-  id
+
+let get_client user =
+  Hashtbl.find_opt the_clients user
+
+let add_client client =
+  let open Client in
+  Hashtbl.replace the_clients client.username client
 
 let stop_client id =
   Hashtbl.remove the_clients id

@@ -2,9 +2,12 @@
    Items are handled over the websocket.
 *)
 
-let handle_client table websocket =
-  let client = Client.create table websocket in
-  Client_runner.start client
+let handle_client username table websocket =
+  match username with
+  | Some username ->
+    let client = Client.create username table websocket in
+    Client_runner.start client
+  | None -> Lwt.return_unit
 
 let json_string_list xs =
   let jstr s = `String s in
@@ -25,9 +28,10 @@ let create_table user name =
 *)
 
 let username_cookie = Public.username_cookie
+let username req = Dream.cookie req username_cookie
 
 let dream_authentication inner_handler request =
-  match Dream.cookie request username_cookie with
+  match username request with
   | Some _username -> inner_handler request
   | None -> Dream.respond ~code:302 ~headers:[("location", "/sign-in")] ""
 
@@ -83,7 +87,7 @@ let start_server listen_ip listen_port =
       Dream.get "/socket/:table"
         (fun req ->
            let table = Dream.param req "table" in
-           Dream.websocket (handle_client table);
+           Dream.websocket (handle_client (username req) table);
         );
     ];
   ]

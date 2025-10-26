@@ -1,4 +1,5 @@
 open Lwt.Syntax
+open Client
 
 let fetch_items table =
   World.gets table
@@ -22,14 +23,27 @@ let handle_items table items =
     |> World.puts table
 
 let flush_queue client =
-  let open Client in
   match take client with
   | Some items -> Json.to_json_str items |> Dream.send client.conn
   | None -> Lwt.return_unit
 
+let stop client =
+  let* _ = Dream.close_websocket client.conn in
+  client.ready <- false;
+  Lwt.return_unit
+
+let maybe_stop client =
+  match client with
+  | Some client ->
+    let* _ = Dream.close_websocket client.conn in
+    client.ready <- false;
+    Lwt.return_unit
+  | None -> Lwt.return_unit
+
 let start client =
-  let client_id = World.add_client client in
+  let* () = World.get_client client.username |> maybe_stop in
   Client.send_to (fetch_items client.table) client;
+  World.add_client client;
   let rec loop () =
     let* incoming = Dream.receive client.conn in
     match incoming with
@@ -38,13 +52,7 @@ let start client =
       let* _ = flush_queue client in
       loop ()
     | None ->
-      World.stop_client client_id;
+      World.stop_client client.username;
       Dream.close_websocket client.conn
   in
   loop ()
-
-let stop client =
-  let open Client in
-  let* _ = Dream.close_websocket client.conn in
-  client.ready <- false;
-  Lwt.return client
