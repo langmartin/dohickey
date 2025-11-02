@@ -70,7 +70,10 @@ let handle_fetch ev =
        | Some remote -> respond remote; Lwt.return_unit
        | None -> respond default_response; Lwt.return_unit)
 
-let add_fetch_listener () = ()
+let add_fetch_listener () =
+  let f = Jv.callback ~arity:1 handle_fetch in
+  ignore @@
+  Jv.call Jv.global "addEventListener" [| Jv.of_string "fetch"; f |]
 
 (*
 let add_fetch () =
