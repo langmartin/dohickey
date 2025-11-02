@@ -1,8 +1,17 @@
 * Upcoming
 
+** feat: actually log in to something
+
+** feat: Timmy says content-editable is the way to go for styling
+
 ** feat: keep some or all stale history items and display them
 
 * Complete
+
+** fix: service worker makes the site available offline
+
+- [ ] add html resources to the caches object
+- [ ] add a fetch handler
 
 ** fix: client websocket disconnects other websockets for that client
 

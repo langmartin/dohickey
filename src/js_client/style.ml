@@ -1,26 +1,18 @@
 open Brr
 open Util
 
-let _id ids =
-  ids
-  |> List.map Int.to_string
-  |> List.cons "dh"
-  |> String.concat "-"
-
 let vote_btn send_vote dir =
   El.button [El.txt' dir]
   |> add_ev_listener Ev.click send_vote
 
 (* TODO: on_click event handler that sends a vote *)
 let vote_ctx vote row col =
-  let data_row i = At.(int (Jstr.v "data-row") i) in
-  let data_col i = At.(int (Jstr.v "data-col") i) in
   let vote_btn = vote_btn vote in
   El.div ~at:[
     At.hidden;
     cls ["ballot-box"];
-    data_row row;
-    data_col col
+    At.(int (Jstr.v "data-row") row);
+    At.(int (Jstr.v "data-col") col)
   ]
     [vote_btn "+"; vote_btn "-"]
 

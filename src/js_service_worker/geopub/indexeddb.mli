@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: ISC
  *)
 
+module Request : sig
+  val to_lwt : Jv.t -> Jv.t Lwt.t
+end
+
 module KeyRange : sig
   type t
 

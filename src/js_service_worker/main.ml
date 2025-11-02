@@ -155,6 +155,7 @@ and recv_lp () =
 
 let main () =
   Console.(info ["worker hello"]);
+  Offline.add_fetch_listener();
   recv_lp()
 
 let () = main ()
