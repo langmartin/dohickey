@@ -83,6 +83,12 @@ let default_response =
     ignore @@
     Jv.call ev "respondWith" [|resp|]
 
+let _install_promise _req =
+  (* Brr.Console.debug ["INST"] *)
+  let* cache = open_cache() in
+  let* _ = load_cache cache in
+  ok_unit
+
 let handle_install _ev =
   (* Brr.Console.debug ["INST"] *)
   let* cache = open_cache() in
