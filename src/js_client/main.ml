@@ -12,7 +12,7 @@ let spawn_worker () = try
 
 let rec recv_from_worker w ev =
   let data = Message.Ev.data (Ev.as_type ev) |> Ev.to_jv in
-  Console.info(["recv_from_service_worker"; data]);
+  (* Console.info(["recv_from_service_worker"; data]); *)
   let req = Js_common.Req.of_jv data in
   begin
     match req.body with

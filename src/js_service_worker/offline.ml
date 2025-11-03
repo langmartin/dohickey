@@ -1,7 +1,13 @@
-open Indexeddb.Request
-open Lwt.Syntax
+(* open Brr *)
+(* open Indexeddb.Request *)
 
 let the_version = Jv.of_string "v1"
+
+(* Turns out Fut and Lwt have similar interfaces *)
+open Fut.Result_syntax
+let to_lwt jv_promise = Fut.of_promise ~ok:Fun.id jv_promise
+let ok x = Fut.ok x
+let ok_unit = Fut.ok ()
 
 let open_cache () =
   let cs = Jv.get Jv.global "caches" in
@@ -19,15 +25,34 @@ let load_cache cache =
   |> Jv.call cache "addAll"
   |> to_lwt
 
-(* let offline_exn req _exn = *)
-(*   Console.info ["offline"; req] *)
+let _to_lwt2 req =
+  let result req = Jv.get req "result" in
+  let promise, resolver = Lwt.wait () in
+  Jv.set req "onsuccess"
+  @@ Jv.repr (fun _ev ->
+      Brr.Console.debug [ "success", _ev ];
+      Jv.set req "onsuccess" Jv.undefined;
+      Lwt.wakeup_later resolver @@ result req);
+  Jv.set req "onerror"
+  @@ Jv.repr (fun _ ->
+      Jv.set req "onerror" Jv.undefined;
+      let error = Jv.get req "error" in
+      Brr.Console.error [ error ];
+      Lwt.wakeup_later_exn resolver @@ Jv.Error (Jv.to_error error));
+  promise
+
+let debug_cache () =
+  let cs = Jv.get Jv.global "caches" in
+  let* xs = Jv.call cs "keys" [||] |> to_lwt in
+  Brr.Console.debug ["CACHE"; xs];
+  ok_unit
 
 let to_opt jv = if Jv.is_none jv then None else Some jv
 
 let via_cache req =
   let* caches = open_cache() in
   let* local = Jv.call caches "match" [|req|] |> to_lwt in
-  local |> to_opt |> Lwt.return
+  local |> to_opt |> ok
 
 let put_cache req resp =
   let* c = open_cache() in
@@ -37,10 +62,10 @@ let put_cache req resp =
 let via_fetch req =
   let* remote = Jv.call Jv.global "fetch" [| req |] |> to_lwt in
   if Jv.is_none remote then
-    Lwt.return_none
+    ok None
   else
     let* _ = put_cache req remote in
-    Lwt.return_some remote
+    ok (Some remote)
 
 let default_response =
   let resp = Jv.get Jv.global "Response" in
@@ -54,26 +79,42 @@ let default_response =
   |]
   |> Jv.new' resp
 
-let handle_fetch ev =
-  let respond resp =
+  let ev_respond ev resp =
     ignore @@
     Jv.call ev "respondWith" [|resp|]
-  in
+
+let handle_install _ev =
+  (* Brr.Console.debug ["INST"] *)
+  let* cache = open_cache() in
+  let* _ = load_cache cache in
+  ok_unit
+
+let handle_fetch ev =
+  Brr.Console.debug ["TOP"];
+
   let req = Jv.get ev "request" in
+  let respond = ev_respond ev in
   let* local = via_cache req in
+
+  Brr.Console.debug ["LOC"];
   match local with
-  | Some resp ->
-    respond resp;
-    Lwt.return_unit
-  | None -> let* remote = via_fetch req in
+  | Some resp -> respond resp; ok_unit
+  | None ->
+    let* remote = via_fetch req in
     (match remote with
-       | Some remote -> respond remote; Lwt.return_unit
-       | None -> respond default_response; Lwt.return_unit)
+       | Some remote -> respond remote; ok_unit
+       | None -> respond default_response; ok_unit)
+
+let add_listener event_name f =
+  let f = Jv.callback ~arity:1 f in
+  ignore @@
+  Jv.call Jv.global "addEventListener" [| Jv.of_string event_name; f |]
+
+let add_install_listener () =
+  add_listener "install" handle_install
 
 let add_fetch_listener () =
-  let f = Jv.callback ~arity:1 handle_fetch in
-  ignore @@
-  Jv.call Jv.global "addEventListener" [| Jv.of_string "fetch"; f |]
+  add_listener "fetch" handle_fetch
 
 (*
 let add_fetch () =
