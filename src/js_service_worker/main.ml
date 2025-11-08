@@ -30,12 +30,14 @@ let socket_send items =
   |> Connection.send
 
 let client_push_user user =
+  Console.info ["client_push_user"; user];
   let open Req in
   user |> of_user |> to_jv |> Worker.G.post
 
 let do_each f xs = List.fold_left (fun _ x -> f x; ()) () xs
 
 let client_push_items items =
+  Console.info ["client_push_items"; List.length items];
   let open Req in
   let dims = Table.dims state.data |> of_dims |> to_jv in
   Worker.G.post dims;
@@ -154,9 +156,10 @@ and recv_lp () =
   ()
 
 let main () =
-  Console.(info ["worker hello"]);
+  Console.info ["worker hello"];
   ignore @@ Offline.debug_cache();
-  Offline.add_fetch_listener();
+  (* Offline.add_install_listener(); *)
+  (* Offline.add_fetch_listener(); *)
   recv_lp()
 
 let () = main ()

@@ -15,6 +15,8 @@ let open_cache () =
   |> to_lwt
 
 let load_cache cache =
+  Console.debug ["LOAD"; cache];
+
   [|
     "table";
     "main.css";
@@ -28,7 +30,7 @@ let load_cache cache =
 let debug_cache () =
   let cs = Jv.get Jv.global "caches" in
   let* xs = Jv.call cs "keys" [||] |> to_lwt in
-  Brr.Console.debug ["CACHE"; xs];
+  Console.debug ["CACHE"; xs];
   ok_unit
 
 let to_opt jv = if Jv.is_none jv then None else Some jv
@@ -66,8 +68,8 @@ let default_response =
 let ev_request ev = Jv.get ev "request"
 let ev_respond ev promise = ignore @@ Jv.call ev "respondWith" [|promise|]
 
-let install _req =
-  (* Brr.Console.debug ["INST"] *)
+let install() =
+  ignore @@ Jv.call Jv.global "skipWaiting" [||];
   let* cache = open_cache() in
   let* _ = load_cache cache in
   ok_unit
@@ -84,18 +86,26 @@ let fetch req =
        | None -> ok default_response)
 
 let handle pfunc ev =
+  (* Console.debug ["HANDLE"; ev]; *)
   ev_request ev
   |> pfunc
   |> to_promise
   |> ev_respond ev
 
+let handle_install ev =
+  Console.debug ["HANDLE"; ev];
+  let p = install() |> to_promise in
+  Jv.call ev "waitUntil" [| p |]
+
 let add_listener event_name f =
+  let self = Jv.get Jv.global "self" in
   let f = Jv.callback ~arity:1 f in
+  Console.debug ["SELF"; self];
   ignore @@
-  Jv.call Jv.global "addEventListener" [| Jv.of_string event_name; f |]
+  Jv.call self "addEventListener" [| Jv.of_string event_name; f |]
 
 let add_install_listener () =
-  add_listener "install" (handle install)
+  add_listener "install" handle_install
 
 let add_fetch_listener () =
   add_listener "fetch" (handle fetch)
