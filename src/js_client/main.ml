@@ -1,14 +1,18 @@
 open Brr
 open Brr_io
 open Brr_webworkers
+open Fut.Result_syntax
 open Util
 
 (* Start the worker and listen for events *)
 
-let spawn_worker () = try
-    Ok (Worker.create (Jstr.v "js_service_worker.js"))
-  with
-  | Jv.Error e -> Error e
+let start_service_worker () =
+  let open Service_worker.Container in
+  let open Service_worker.Registration in
+  let c = of_navigator G.navigator in
+  let* r = register c (Jstr.v "js_service_worker.js") in
+  Console.debug ["REG"; r];
+  Fut.ok (active r)
 
 let rec recv_from_worker w ev =
   let data = Message.Ev.data (Ev.as_type ev) |> Ev.to_jv in
@@ -30,11 +34,17 @@ and recv_lp w =
   ()
 
 let spawn () =
-  match spawn_worker () with
-  | Error _e -> ()
-  | Ok w ->
-    Send.set_worker w;
-    recv_lp w
+  let* sw = start_service_worker() in
+  begin
+    match sw with
+    | Some sw ->
+      let w = Service_worker.as_worker sw in
+      Send.set_worker w;
+      recv_lp w
+    | None ->
+      Console.error ["service worker failed to start"]
+  end;
+  Fut.ok ()
 
 (* Event handlers for 3 main table buttons *)
 
@@ -84,12 +94,12 @@ let init_table() =
   G.window |>  Window.location |> Uri.fragment |> Jstr.to_string |> Send.table_id
 
 let main () =
-  spawn();
+  ignore @@ spawn();
   on_click "#votey" start_vote;
   on_click "#add-option" add_option;
   on_click "#add-goal" add_goal;
   on_click "#title" edit_title;
-  init_table();
+  set_timeout init_table 10;
   Console.info(["client hello"])
 
 let main_table() = ignore @@ on_load main

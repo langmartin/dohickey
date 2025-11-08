@@ -42,6 +42,11 @@ let on_load thunk =
   Fut.bind (Ev.next Ev.load (Window.as_target G.window)) @@ fun _ev -> thunk();
   Fut.return()
 
+let set_timeout f ms =
+  let set_timeout = Jv.get Jv.global "setTimeout" in
+  let f = Jv.callback ~arity:1 f in
+  ignore @@ Jv.apply set_timeout Jv.[| f; of_int ms |]
+
 let repeatedly f n =
   let open Seq in
   repeat f
