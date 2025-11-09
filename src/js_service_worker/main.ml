@@ -132,9 +132,8 @@ let got_user user =
   state.user <- user;
   client_push_user user
 
-let rec recv_from_page e =
+let recv_from_page data =
   let open Js_common in
-  let data = Message.Ev.data (Ev.as_type e) |> Ev.to_jv in
   Console.info(["recv_from_client"; data]);
   let req = Req.of_jv data in
   begin
@@ -147,19 +146,20 @@ let rec recv_from_page e =
       got_item item
     | Some _ -> ()
     | None -> ()
-  end;
-  recv_lp()
+  end
 
-and recv_lp () =
-  let msg = Ev.next Message.Ev.message G.target in
-  let _ = Fut.map recv_from_page msg in
-  ()
+let add_message_listener () =
+  let open Offline in
+  let f ev =
+    Jv.get ev "data" |> recv_from_page
+  in
+  add_listener "message" f
 
 let main () =
   Console.info ["worker hello"];
   ignore @@ Offline.debug_cache();
   (* Offline.add_install_listener(); *)
-  (* Offline.add_fetch_listener(); *)
-  recv_lp()
+  Offline.add_fetch_listener();
+  add_message_listener()
 
 let () = main ()
