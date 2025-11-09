@@ -1,4 +1,5 @@
 open Brr
+open Brr_webworkers
 
 (* Turns out Fut and Lwt have similar interfaces *)
 open Fut.Result_syntax
@@ -21,7 +22,7 @@ let load_cache cache =
     "table";
     "main.css";
     "js_client.js";
-    "js_service_worker.js"
+    (* "js_service_worker.js" *)
   |]
   |> Array.map Jv.of_string
   |> Jv.call cache "addAll"
@@ -34,11 +35,13 @@ let debug_cache () =
   ok_unit
 
 let to_opt jv = if Jv.is_none jv then None else Some jv
+let ( >>= ) = Option.bind
+let clone resp = Some (Jv.call resp "clone" [||])
 
 let via_cache req =
   let* cache = open_cache() in
   let* local = Jv.call cache "match" [|req|] |> to_lwt in
-  local |> to_opt |> ok
+  local |> to_opt >>= clone |> ok
 
 let put_cache req resp =
   let* c = open_cache() in
@@ -69,7 +72,7 @@ let ev_request ev = Jv.get ev "request"
 let ev_respond ev promise = ignore @@ Jv.call ev "respondWith" [|promise|]
 
 let install() =
-  ignore @@ Jv.call Jv.global "skipWaiting" [||];
+  ignore @@ Service_worker.G.skip_waiting();
   let* cache = open_cache() in
   let* _ = load_cache cache in
   ok_unit
