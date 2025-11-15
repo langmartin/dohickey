@@ -6,17 +6,19 @@ open Util
 
 (* Start the worker and listen for events *)
 
+let container () = Service_worker.Container.of_navigator G.navigator
+
 let start_service_worker () =
   let open Service_worker.Container in
   let open Service_worker.Registration in
-  let c = of_navigator G.navigator in
+  let c = container() in
   let* r = register c (Jstr.v "js_service_worker.js") in
   Console.debug ["REG"; r];
   Fut.ok (active r)
 
 let rec recv_from_worker w ev =
   let data = Message.Ev.data (Ev.as_type ev) |> Ev.to_jv in
-  (* Console.info(["recv_from_service_worker"; data]); *)
+  Console.info ["recv_from_service_worker"; data];
   let req = Js_common.Req.of_jv data in
   begin
     match req.body with
@@ -28,9 +30,9 @@ let rec recv_from_worker w ev =
   end;
   recv_lp w
 
-and recv_lp w =
-  let msg = Ev.next Message.Ev.message (Worker.as_target w) in
-  let _ = Fut.map (recv_from_worker w) msg in
+and recv_lp c =
+  let msg = Ev.next Message.Ev.message (Service_worker.Container.as_target c) in
+  let _ = Fut.map (recv_from_worker c) msg in
   ()
 
 let spawn () =
@@ -38,9 +40,10 @@ let spawn () =
   begin
     match sw with
     | Some sw ->
+      let c = container() in
       let w = Service_worker.as_worker sw in
       Send.set_worker w;
-      recv_lp w
+      recv_lp c
     | None ->
       Console.error ["service worker failed to start"]
   end;
@@ -51,7 +54,7 @@ let spawn () =
 let start_vote ev =
   Ev.stop_propagation ev;
   let btn = event_el ev in
-  Console.(debug [str "start_vote"]);
+  Console.debug ["start_vote"];
   match El.parent btn with
   | None -> ()
   | Some _el -> Send.call "FIXME"; ()
