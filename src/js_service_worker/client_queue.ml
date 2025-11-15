@@ -1,6 +1,5 @@
 open Brr
 open Brr_webworkers
-open Dohickey
 open Js_common
 
 type queued = Req.t
@@ -35,7 +34,7 @@ let rec drain () =
   | None -> Fut.ok ()
   | Some req ->
     let* _ = req |> Req.to_jv |> g_post in
-    Fut.ok ()
+    drain()
 
 let maybe_start () =
   if state.running then

@@ -1,6 +1,5 @@
 open Brr
 open Brr_io
-open Brr_webworkers
 open Dohickey
 open Js_common
 
@@ -31,30 +30,11 @@ let socket_send items =
 
 let client_push_user user =
   Console.info ["client_push_user"; user];
-  let open Req in
-  user |> of_user |> to_jv |> Worker.G.post
-
-open Fut.Result_syntax
-
-let g_post jv =
-  let open Service_worker in
-  let* cs = Clients.match_all G.clients in
-  let f c = Client.post c jv in
-  List.iter f cs;
-  Fut.ok ()
+  Client_queue.user user
 
 let client_push_items items =
   Console.info ["client_push_items"; List.length items];
-  let open Req in
-  let dims = Table.dims state.data |> of_dims |> to_jv in
-  let* _ = g_post dims in
-  let open Fut.Syntax in
-  let* _ = items
-  |> List.map (fun item -> item |> of_item |> to_jv)
-  |> List.map g_post
-  |> Fut.of_list
-  in
-  Fut.ok ()
+  Client_queue.items (Table.dims state.data) items
 
 let join_item item =
   let data = state.data in
@@ -73,9 +53,8 @@ let recv_time (item : Dohickey.Item.t) =
   | None -> ()
 
 let push items =
-  let* _ = client_push_items items in
-  socket_send items;
-  Fut.ok ()
+  client_push_items items;
+  socket_send items
 
 let save_push item =
   Db.save_item state.table item;
