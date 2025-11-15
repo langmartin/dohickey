@@ -34,16 +34,27 @@ let client_push_user user =
   let open Req in
   user |> of_user |> to_jv |> Worker.G.post
 
-let do_each f xs = List.fold_left (fun _ x -> f x; ()) () xs
+open Fut.Result_syntax
+
+let g_post jv =
+  let open Service_worker in
+  let* cs = Clients.match_all G.clients in
+  let f c = Client.post c jv in
+  List.iter f cs;
+  Fut.ok ()
 
 let client_push_items items =
   Console.info ["client_push_items"; List.length items];
   let open Req in
   let dims = Table.dims state.data |> of_dims |> to_jv in
-  Worker.G.post dims;
-  items
+  let* _ = g_post dims in
+  let open Fut.Syntax in
+  let* _ = items
   |> List.map (fun item -> item |> of_item |> to_jv)
-  |> do_each Worker.G.post
+  |> List.map g_post
+  |> Fut.of_list
+  in
+  Fut.ok ()
 
 let join_item item =
   let data = state.data in
@@ -62,8 +73,9 @@ let recv_time (item : Dohickey.Item.t) =
   | None -> ()
 
 let push items =
-  client_push_items items;
-  socket_send items
+  let* _ = client_push_items items in
+  socket_send items;
+  Fut.ok ()
 
 let save_push item =
   Db.save_item state.table item;
@@ -79,7 +91,7 @@ let recv_items ?(save=true) items =
       Db.save_item state.table item;
     join_item item
   in
-  do_each recv_item items
+  List.iter recv_item items
 
 let recv_from_ws e =
   let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
