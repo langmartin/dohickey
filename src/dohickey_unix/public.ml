@@ -21,6 +21,7 @@ let blobs = [
 ]
 
 let slurp dir file =
+  print_endline ("FRESH " ^ file);
   let file = Filename.concat dir file in
   let ch = open_in_bin file in
   let s = really_input_string ch (in_channel_length ch) in

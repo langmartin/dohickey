@@ -16,7 +16,7 @@ let start_service_worker () =
   Console.debug ["REG"; r];
   Fut.ok (active r)
 
-let rec recv_from_worker w ev =
+let recv_from_worker ev =
   let data = Message.Ev.data (Ev.as_type ev) |> Ev.to_jv in
   Console.info ["recv_from_service_worker"; data];
   let req = Js_common.Req.of_jv data in
@@ -27,13 +27,22 @@ let rec recv_from_worker w ev =
     | Some Init _table_id -> ()
     | Some User user -> Draw.user user
     | None -> ()
-  end;
-  recv_lp w
+  end
 
-and recv_lp c =
-  let msg = Ev.next Message.Ev.message (Service_worker.Container.as_target c) in
-  let _ = Fut.map (recv_from_worker c) msg in
-  ()
+(* let rec recv_lp_ev w ev = *)
+(*   recv_from_worker ev; *)
+(*   recv_lp w *)
+(* and recv_lp c = *)
+(*   let msg = Ev.next Message.Ev.message (Service_worker.Container.as_target c) in *)
+(*   let _ = Fut.map (recv_lp_ev c) msg in *)
+(*   () *)
+
+let recv_listener c =
+  let t = Service_worker.Container.as_target c in
+  (* let jv = Service_worker.Container.to_jv c in *)
+  Console.debug ["CON"; t];
+  ignore @@
+  Ev.listen Message.Ev.message recv_from_worker t
 
 let spawn () =
   let* sw = start_service_worker() in
@@ -43,7 +52,7 @@ let spawn () =
       let c = container() in
       let w = Service_worker.as_worker sw in
       Send.set_worker w;
-      recv_lp c
+      recv_listener c
     | None ->
       Console.error ["service worker failed to start"]
   end;
@@ -102,7 +111,7 @@ let main () =
   on_click "#add-option" add_option;
   on_click "#add-goal" add_goal;
   on_click "#title" edit_title;
-  set_timeout init_table 10;
+  set_timeout init_table 20;
   Console.info(["client hello"])
 
 let main_table() = ignore @@ on_load main

@@ -89,11 +89,19 @@ let fetch req =
        | None -> ok default_response)
 
 let handle pfunc ev =
-  (* Console.debug ["HANDLE"; ev]; *)
+  let cli = Jv.get ev "clientId" |> Jv.to_jstr in
+  Client_queue.set_client cli;
+  Console.debug ["HANDLE"; ev; cli];
   ev_request ev
   |> pfunc
   |> to_promise
   |> ev_respond ev
+
+let handle_activate ev =
+  Console.debug ["ACTIVATE"; ev];
+  let open Service_worker in
+  let p = Clients.claim G.clients |> to_promise in
+  Jv.call ev "waitUntil" [| p |]
 
 let handle_install ev =
   Console.debug ["HANDLE"; ev];
@@ -106,6 +114,9 @@ let add_listener event_name f =
   Console.debug ["SELF"; self];
   ignore @@
   Jv.call self "addEventListener" [| Jv.of_string event_name; f |]
+
+let add_activate_listener () =
+  add_listener "activate" handle_activate
 
 let add_install_listener () =
   add_listener "install" handle_install

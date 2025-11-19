@@ -150,6 +150,7 @@ let main () =
   Console.info ["worker hello"];
   ignore @@ Offline.debug_cache();
   (* Offline.add_install_listener(); *)
+  Offline.add_activate_listener();
   Offline.add_fetch_listener();
   add_message_listener()
 
