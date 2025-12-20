@@ -250,3 +250,6 @@ let user username =
   match qs1 "#user" with
   | Some el -> El.set_children el [El.txt' username]
   | None -> ()
+
+let hist (item : Item.t) =
+  Draw_history.item item

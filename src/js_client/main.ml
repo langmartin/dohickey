@@ -12,12 +12,13 @@ let spawn_worker () = try
 
 let rec recv_from_worker w ev =
   let data = Message.Ev.data (Ev.as_type ev) |> Ev.to_jv in
-  Console.info(["recv_from_service_worker"; data]);
+  (* Console.info(["recv_from_service_worker"; data]); *)
   let req = Js_common.Req.of_jv data in
   begin
     match req.body with
     | Some (Dims (row, col)) -> Draw.dims (row, col)
-    | Some Item item -> Draw.item item
+    | Some Item item -> Draw.item item; Draw.hist item
+    | Some History item -> Draw.hist item
     | Some Init _table_id -> ()
     | Some User user -> Draw.user user
     | None -> ()
@@ -81,7 +82,7 @@ let init_table() =
       Console.error ["Missing #user!"];
       ignore @@ failwith "no_user";
   end;
-  G.window |>  Window.location |> Uri.fragment |> Jstr.to_string |> Send.table_id
+  G.window |> Window.location |> Uri.fragment |> Jstr.to_string |> Send.table_id
 
 let main () =
   spawn();

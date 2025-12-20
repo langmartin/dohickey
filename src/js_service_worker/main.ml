@@ -5,17 +5,19 @@ open Dohickey
 open Js_common
 
 type t = {
-  mutable lamport : int64;
+  mutable hulc : Hulc.t;
   mutable table : string;
   mutable user : string;
-  mutable data : Table.t
+  mutable data : Table.t;
+  mutable history : Item.t list
 }
 
 let state = {
-  lamport = Int64.of_int 0;
+  hulc = Hulc.init "";
   table = "";
   user = "";
-  data = Table.empty
+  data = Table.empty;
+  history = []
 }
 
 let parse data =
@@ -29,34 +31,42 @@ let socket_send items =
   |> List.map Jv_item.of_item
   |> Connection.send
 
+let client_post req = req |> Req.to_jv |> Worker.G.post
+
 let client_push_user user =
   let open Req in
-  user |> of_user |> to_jv |> Worker.G.post
-
-let do_each f xs = List.fold_left (fun _ x -> f x; ()) () xs
+  user |> of_user |> client_post
 
 let client_push_items items =
   let open Req in
-  let dims = Table.dims state.data |> of_dims |> to_jv in
-  Worker.G.post dims;
+  Table.dims state.data |> of_dims |> client_post;
   items
-  |> List.map (fun item -> item |> of_item |> to_jv)
-  |> do_each Worker.G.post
+  |> List.map of_item
+  |> List.iter client_post
+
+let client_push_history items =
+  items
+  |> List.map Req.history_of_item
+  |> List.iter client_post
 
 let join_item item =
   let data = state.data in
   state.data <- Table.join item data
 
+let init_hulc user = Hulc.init (Node_id.make_id user)
+
 let send_time() =
-  let t = Lamport.send state.lamport in
-  state.lamport <- t;
-  Lamport.sprint64 t
+  let open Hulc in
+  let t = send state.hulc in
+  state.hulc <- t;
+  sprint t
 
 let recv_time (item : Dohickey.Item.t) =
-  match Lamport.parse64 item.coda.time with
+  let open Hulc in
+  match parse_opt item.coda.time with
   | Some m ->
-    let t = Lamport.recv state.lamport m in
-    state.lamport <- t
+    let t = recv state.hulc m in
+    state.hulc <- t
   | None -> ()
 
 let push items =
@@ -67,17 +77,26 @@ let save_push item =
   Db.save_item state.table item;
   push [item]
 
-let recv_items ?(save=true) items =
-  let recv_item item =
-    recv_time item;
-    (* Keep save in here so that we only save the freshest, even when
-       this list of items has stale versions mixed with their
-       replacements. *)
-    if Table.is_fresh state.data item && save then
-      Db.save_item state.table item;
-    join_item item
+let append_history items =
+  let hs = List.append items state.history
+    |> List.sort Item.compare
+    |> Util_list.dedup_right Item.compare
   in
-  do_each recv_item items
+  state.history <- hs
+
+let recv_history items =
+  append_history items;
+  client_push_history items
+
+let recv_items ?(save=true) items =
+  List.iter recv_time items;
+  let fresh = List.filter (Table.is_fresh state.data) items in
+  let stale = List.filter (Table.is_stale state.data) items in
+  if save then
+    List.iter (Db.save_item state.table) fresh;
+  List.iter join_item fresh;
+  client_push_items fresh;
+  recv_history stale
 
 let recv_from_ws e =
   let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
@@ -126,8 +145,10 @@ let got_init table_id =
   connect_ws();
   init_db table_id
 
+(* Must be called before got_init to set the HULC *)
 let got_user user =
   state.user <- user;
+  state.hulc <- init_hulc user;
   client_push_user user
 
 let rec recv_from_page e =
@@ -143,7 +164,7 @@ let rec recv_from_page e =
       got_user user
     | Some Item item ->
       got_item item
-    | Some _ -> ()
+    | Some Dims _ | Some History _ -> ()
     | None -> ()
   end;
   recv_lp()

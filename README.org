@@ -9,6 +9,18 @@
   will make it accessible (and restart-able) from any file in the
   project.
 
+*** Switches
+
+#+begin_src sh
+  opam switch list-available
+  opam switch search caml-option
+  opam switch set SWITCH
+  opam install -y ocaml-manual odig utop user-setup merlin ocamlformat dune dune-release
+  odig doc brr
+  odig doc ocaml
+  odig doc dream # navigate to index
+#+end_src
+
 ** Service Worker
 
 The service worker can store data locally and take care of resending

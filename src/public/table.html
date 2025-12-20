@@ -10,18 +10,36 @@
     <script type="text/javascript">main_table()</script>
   </head>
   <body>
-    <h1>
-      <span id="title">title</span>
-      <span id="user">{{username}}</span>
-    </h1>
-    <table id="dohickey">
-      <tr id="dh-0">
-        <th id="dh-0-0">
-          <button id="votey">Vote</button>
-          <button id="add-option">Add option</button>
-          <button id="add-goal">Add goal</button>
-        </th>
-      </tr>
-    </table>
+    <div id="content">
+      <div class="content-main">
+        <h1>
+          <span id="title">title</span>
+          <span id="user">{{username}}</span>
+        </h1>
+        <table id="dohickey">
+          <tr id="dh-0">
+            <th id="dh-0-0">
+              <button id="votey">Vote</button>
+              <button id="add-option">Add option</button>
+              <button id="add-goal">Add goal</button>
+            </th>
+          </tr>
+        </table>
+      </div>
+      <div class="content-side">
+        <h1>Changes</h1>
+        <ul id="history" data-ord="desc">
+          <li id="hist-item-template" class="template" data-ts="">
+            <div>
+              <span data-key="type"></span>
+              <span data-key="text"></span>
+            </div>
+            <div class="small">
+              <span data-key="author"></span> at <span data-key="time"></span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
   </body>
 </html>

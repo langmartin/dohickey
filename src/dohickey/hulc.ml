@@ -29,10 +29,14 @@ let sprint clock =
   let {time; node} = clock in
   Hlc.sprint64 time ^ node
 
-let split_opt serialized : split option =
-  match String.split_on_char '-' serialized with
-  | time :: node :: [] -> Some { time; node }
-  | _ -> None
+let split_opt s : split option =
+  let open String in
+  if length s = 23 then
+    let time = sub s 0 11 in
+    let node = sub s 11 12 in
+    Some {time; node}
+  else
+    None
 
 let parse_opt serialized =
   match split_opt serialized with

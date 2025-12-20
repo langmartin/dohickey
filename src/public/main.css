@@ -1,19 +1,29 @@
 :root {
-    --bd-color: #ddd;
+    --lo-contrast: #ddd;
 }
 @media (prefers-color-scheme: dark) {
     :root {
         background: #111;
         color: #fff;
-        --bd-color: #333;
+        --lo-contrast: #333;
     }
 }
 :root {
-    --bd: solid 1px var(--bd-color);
+    --bd: solid 1px var(--lo-contrast);
 }
+
+.template { display: none; }
+#content { display: flex; flex-direction: row; }
+.content-main { flex: 1; }
+.content-side { flex: 0 1 auto; }
 
 button { font-family: "cursive" }
 table { border: var(--bd) }
 th,td { padding: 1em; margin: 0; border: 0; }
 th { border-right: var(--bd); }
 #options th { border-bottom: var(--bd); border-right: 0; }
+
+.small {
+    font-size: smaller;
+    color: var(--lo-contrast);
+}

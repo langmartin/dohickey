@@ -64,3 +64,14 @@ let id_of item =
 let of_title title user time =
   let body = Title title in
   {coda = {user; time}; body}
+
+let compare a b = Coda.compare a.coda b.coda
+
+let text item =
+  match item.body with
+    Text t -> t.text
+  | Vote _ -> "Vote"
+  | Result _ -> "Result"
+  | Call _ -> "Call vote"
+  | Count _ -> "Count vote"
+  | Title t -> t

@@ -1,5 +1,6 @@
 type body =
   | Item of Dohickey.Item.t
+  | History of Dohickey.Item.t
   | Dims of int * int
   | Init of string
   | User of string
@@ -20,6 +21,11 @@ let item_body jv =
   | Some item -> Some (Item item)
   | None -> None
 
+let history_body jv =
+  match Jv_item.obj_to_item jv with
+  | Some item -> Some (History item)
+  | None -> None
+
 let init_body jv =
   match Jv.to_string jv with
   | "" -> None
@@ -36,6 +42,9 @@ let of_dims (rows, cols) =
 let of_item item =
   { path = "item"; body = Some (Item item) }
 
+let history_of_item item =
+  { path = "history"; body = Some (History item) }
+
 let of_init table_id =
   { path = "init"; body = Some (Init table_id) }
 
@@ -48,6 +57,7 @@ let of_jv jv =
   match path with
   | "dims" -> {path; body = dims_body jv}
   | "item" -> {path; body = item_body jv}
+  | "history" -> {path; body = history_body jv}
   | "init" -> {path; body = init_body jv}
   | "user" -> {path; body = user_body jv}
   | _ -> {path; body = None}
@@ -61,6 +71,7 @@ let to_jv req =
   let jv_req_body req =
     match req.body with
     | Some Item item -> jv_item_body item
+    | Some History item -> jv_item_body item
     | Some (Dims (row, col)) -> dims_body row col
     | Some Init table_id -> init_body table_id
     | Some User user -> user_body user

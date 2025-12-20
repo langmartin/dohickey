@@ -61,9 +61,14 @@ let parse64_opt serialized =
   match Base64.decode ~pad:false serialized with
   | Ok str ->
     let buf = Bytes.of_string str in
-    let lower_bits = Bytes.get_int32_be buf 2 |> Int64.of_int32 in
+    let low_16 = Bytes.get_uint16_be buf 2 in
+    let lower_16 = Bytes.get_uint16_be buf 4 in
+    let lower_bits =
+      Int64.shift_left (Int64.of_int low_16) 16
+      |> Int64.logor (Int64.of_int lower_16)
+    in
     let upper_bits = Bytes.get_int16_be buf 0 in
     let time = Int64.shift_left (Int64.of_int upper_bits) 32 |> Int64.logor lower_bits in
     let tick = Bytes.get_int16_be buf 6 in
-    Some {time = time; tick = tick}
+    Some {time; tick}
   | _error -> None

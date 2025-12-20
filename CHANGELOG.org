@@ -1,8 +1,28 @@
 * Upcoming
 
-** feat: keep some or all stale history items and display them
+** feat: actually log in to something
+
+** fix: service worker makes the site available offline
+
+~offline~, the initial effort, didn't go great. Messages aren't
+connected in there and the ongoing debugging experience in another
+window is confusing. Might do just the fetch part as pure JS later,
+and leave the network part in a the webworker.
+
+- [ ] add html resources to the caches object
+- [ ] add a fetch handler
+
+** feat: Timmy says content-editable is the way to go for styling
+
+** feat: Vote
 
 * Complete
+
+** feat: keep some or all stale history items and display them
+
+- [X] new section that displays changes over time
+- [X] insert events in the correct order
+- [X] insert all the events, keeping those removed from table
 
 ** fix: client websocket disconnects other websockets for that client
 
