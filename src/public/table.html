@@ -25,21 +25,54 @@
             </th>
           </tr>
         </table>
+        <form id="editor">
+          <textarea name="text">
+          </textarea>
+          <button type="submit">
+            Save
+          </button>
+        </form>
       </div>
       <div class="content-side">
         <h1>Changes</h1>
         <ul id="history" data-ord="desc">
-          <li id="hist-item-template" class="template" data-ts="">
-            <div>
-              <span data-key="type"></span>
-              <span data-key="text"></span>
-            </div>
-            <div class="small">
-              <span data-key="author"></span> at <span data-key="time"></span>
-            </div>
-          </li>
         </ul>
       </div>
     </div>
+    <div hidden>
+      <table>
+        <tr id="row-template"></tr>
+        <tr>
+          <th id="header-template">
+            <div class="cell">
+              <div class="text" />
+            </div>
+          </th>
+          <td id="cell-template">
+            <div class="cell">
+              <div class="vote" />
+              <div class="text" />
+            </div>
+            <form class="ballot-box" hidden="true">
+              <select name="goodness" data-inert="">
+                <option value="1">best</option>
+                <option value="2">good</option>
+                <option value="3">fine</option>
+                <option value="4">bad</option>
+                <option value="5">worst</option>
+              </select>
+            </form>
+          </td>
+        </tr>
+      </table>
+      <li id="hist-item-template" class="template">
+        <div>
+          <span data-key="type"></span>
+          <span data-key="text"></span>
+        </div>
+        <div class="small">
+          <span data-key="author"></span> at <span data-key="time"></span>
+        </div>
+      </li>
   </body>
 </html>

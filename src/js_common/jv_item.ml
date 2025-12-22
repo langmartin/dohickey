@@ -1,3 +1,13 @@
+(*
+   Convert items to and from JSON for the browser.
+
+   Dohickey_unix.Json does the matching conversion on the server.
+
+   See https://erratique.ch/software/jsont/doc/, it seems like there
+   is a way to derive the JSON types automatically that might be worth
+   cleaning this up in the future.
+*)
+
 open Dohickey.Coda
 open Dohickey.Item
 
@@ -26,6 +36,18 @@ let obj_to_item jv =
     Some {coda; body = Text {row; col; text}}
   | "title" ->
     Some {coda; body = Title (Jv.to_string body)}
+  | "count" ->
+    Some {coda; body = Count true}
+  | "vote" ->
+    let row = jint "row" body in
+    let col = jint "col" body in
+    let rank = jint "rank" body in
+    Some {coda; body = Vote {row; col; rank}}
+  | "result" ->
+    let row = jint "row" body in
+    let col = jint "col" body in
+    let rank = jint "rank" body in
+    Some {coda; body = Result {row; col; rank}}
   | _ -> None
 
 let list_to_item jv =
@@ -43,18 +65,28 @@ let of_item item =
   let typ = match item.body with
     | Text _ -> "text"
     | Title _ -> "title"
-    | _ -> "unimplemented"
+    | Count _ -> "count"
+    | Vote _ -> "vote"
+    | Result _ -> "result"
   in
   let body = match item.body with
-    | Text i ->
-      Jv.obj [|
+    | Text i -> Jv.obj [|
         ("row", Jv.of_int i.row);
         ("col", Jv.of_int i.col);
         ("text", Jv.of_string i.text)
       |]
-    | Title t ->
-      Jv.of_string t
-    | _ -> Jv.null
+    | Title t -> Jv.of_string t
+    | Count _ -> Jv.of_bool true
+    | Vote v -> Jv.obj [|
+        ("row", Jv.of_int v.row);
+        ("col", Jv.of_int v.col);
+        ("rank", Jv.of_int v.rank)
+      |]
+    | Result v -> Jv.obj [|
+        ("row", Jv.of_int v.row);
+        ("col", Jv.of_int v.col);
+        ("rank", Jv.of_int v.rank)
+      |]
   in
   Jv.obj [|
     ("coda", coda);

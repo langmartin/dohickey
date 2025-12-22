@@ -27,9 +27,8 @@ let replacing item t =
 let is_stale t item =
   let open StringMap in
   let key = Item.key item in
-  match find_opt key t.items with
-  | None -> false
-  | Some prev -> Coda.compare prev.coda item.coda > 0
+  match find_opt key t.items with None -> false | Some prev ->
+    Coda.compare prev.coda item.coda >= 0
 
 let is_fresh t item = not (is_stale t item)
 
@@ -106,17 +105,15 @@ let result_of_grp time user grp =
   | [] -> None
   | x :: _ ->
     let open Item in
-    let id = id_of x in
     let (row, col) = pos_of x in
     let rank = count_grp grp in
-    let body = Result{row; col; rank; id = id} in
+    let body = Result{row; col; rank} in
     Some {coda = {time; user}; body}
 
-let make_results time user vote_id t =
+let make_results time user t =
   let open List in
   t
   |> get_votes
-  |> filter (fun v -> vote_id = Item.id_of v)
   |> sort comp_pos
   |> group_votes
   |> map (result_of_grp time user)

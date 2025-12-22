@@ -11,5 +11,5 @@ val replacing : Item.t -> t -> Item.t option
 val join : Item.t -> t -> t
 val put_list : Item.t list -> t -> t
 val dims : t -> int * int
-val make_results : string -> string -> string -> t -> Item.t list
+val make_results : string -> string -> t -> Item.t list
 val to_list : t -> Item.t list

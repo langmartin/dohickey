@@ -29,10 +29,10 @@ let vote vote_body =
   let body = Item.Vote vote_body in
   post_item {coda; body}
 
-let call id =
+let count() =
   let open Dohickey in
   let coda = Coda.empty in
-  let body = Item.Call {id} in
+  let body = Item.Count true in
   post_item {coda; body}
 
 let title text =

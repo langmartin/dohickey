@@ -12,7 +12,7 @@ let spawn_worker () = try
 
 let rec recv_from_worker w ev =
   let data = Message.Ev.data (Ev.as_type ev) |> Ev.to_jv in
-  (* Console.info(["recv_from_service_worker"; data]); *)
+  (* Console.debug ["recv_from_service_worker"; data]; *)
   let req = Js_common.Req.of_jv data in
   begin
     match req.body with
@@ -41,11 +41,11 @@ let spawn () =
 
 let start_vote ev =
   Ev.stop_propagation ev;
-  let btn = event_el ev in
-  Console.(debug [str "start_vote"]);
-  match El.parent btn with
-  | None -> ()
-  | Some _el -> Send.call "FIXME"; ()
+  let open Draw_vote in
+  if is_voting() then
+    stop()
+  else
+    start()
 
 let goal_dims rows cols = (rows + 1, cols)
 let option_dims rows cols = (rows, cols + 1)
@@ -90,6 +90,7 @@ let main () =
   on_click "#add-option" add_option;
   on_click "#add-goal" add_goal;
   on_click "#title" edit_title;
+  Draw_editor.init();
   init_table();
   Console.info(["client hello"])
 
@@ -100,6 +101,8 @@ let index () =
 
 let main_index() = ignore @@ on_load index
 
+(* This library is loaded by both table and the index, and these entry
+   points are called from JS in the HTML sources. *)
 let () =
   Jv.set Jv.global "main_table" (Jv.callback ~arity:1 main_table);
   Jv.set Jv.global "main_index" (Jv.callback ~arity:1 main_index)

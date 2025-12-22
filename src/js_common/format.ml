@@ -16,3 +16,7 @@ let nice_of_hulc (h : Hulc.t) =
   let ds = Jv.to_string (Jv.call dt "toUTCString" [||]) in
   let i = String.rindex ds ':' in
   String.sub ds 0 i
+
+let make_uuid () =
+  let crypto = Jv.get Jv.global "crypto" in
+  Jv.call crypto "randomUUID" [||] |> Jv.to_string

@@ -1,1 +1,1 @@
-type t = {row: int; col: int; id: string; rank: int}
+type t = {row: int; col: int; rank: int}

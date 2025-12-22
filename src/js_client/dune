@@ -4,3 +4,7 @@
  (preprocess
   (pps js_of_ocaml-ppx))
  (libraries brr dohickey js_common))
+
+(env
+ (dev
+  (js_of_ocaml (flags --enable with-js-error))))

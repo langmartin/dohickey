@@ -1,11 +1,6 @@
-type text_body = {row: int; col: int; text: string}
-
-type call_body = {id: string}
-
 type body =
-  | Text of text_body
-  | Call of call_body
-  | Count of call_body
+  | Text of Text.t
+  | Count of bool
   | Vote of Vote.t
   | Result of Vote.t
   | Title of string
@@ -13,18 +8,14 @@ type body =
 type t = {coda: Coda.t; body: body}
 
 let key_pos word row col = [word; Int.to_string row; Int.to_string col] |> String.concat "-"
-let key_id word id = [word; id] |> String.concat "-"
-
 let key_text = key_pos "text"
 let key_vote = key_pos "vote"
 let key_result = key_pos "result"
-let key_call = key_id "call"
-let key_count = key_id "count"
 
 let parse_pos word key =
   match key |> String.split_on_char '-' with
   | [pfix; row; col] when pfix = word ->
-    Some {row = int_of_string row; col = int_of_string col; text = ""}
+    Some Text.{row = int_of_string row; col = int_of_string col; text = ""}
   | _ ->
     None
 
@@ -33,9 +24,13 @@ let key item =
   | Text item -> key_text item.row item.col
   | Vote item -> key_vote item.row item.col
   | Result item -> key_result item.row item.col
-  | Call item -> key_call item.id
-  | Count item -> key_count item.id
+  | Count _ -> "count"
   | Title _ -> "title"
+
+let text_key_of_vote item =
+  match item.body with
+  | Vote b -> key_text b.row b.col
+  | _ -> ""
 
 let is_vote item =
   match item.body with
@@ -55,23 +50,16 @@ let rank_of item =
   | Result i -> i.rank
   | _ -> -1
 
-let id_of item =
-  match item.body with
-  | Vote i -> i.id
-  | Result i -> i.id
-  | _ -> ""
-
 let of_title title user time =
   let body = Title title in
   {coda = {user; time}; body}
 
 let compare a b = Coda.compare a.coda b.coda
 
-let text item =
+let text_content item =
   match item.body with
     Text t -> t.text
   | Vote _ -> "Vote"
   | Result _ -> "Result"
-  | Call _ -> "Call vote"
   | Count _ -> "Count vote"
   | Title t -> t

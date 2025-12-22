@@ -48,6 +48,18 @@ let sprint16 clock =
   let open Printf in
   sprintf "%012Lx%04x" clock.time clock.tick
 
+let encode64 buf =
+  buf
+  |> Bytes.to_string
+  |> Base64.encode_string ~pad:false ~alphabet:Base64.uri_safe_alphabet
+
+let decode64 serialzed =
+  let r = serialzed
+    |> Base64.decode ~pad:false ~alphabet:Base64.uri_safe_alphabet in
+  match r with
+  | Ok str -> Some str
+  | _error -> None
+
 let sprint64 clock =
   let buf = Bytes.make 8 '0' in
   let lower_bits = clock.time |> Int64.to_int32 in
@@ -55,11 +67,10 @@ let sprint64 clock =
   Bytes.set_int32_be buf 2 lower_bits;
   Bytes.set_int16_be buf 0 upper_bits;
   Bytes.set_int16_be buf 6 clock.tick;
-  Base64.encode_string ~pad:false (Bytes.to_string buf)
+  encode64 buf
 
 let parse64_opt serialized =
-  match Base64.decode ~pad:false serialized with
-  | Ok str ->
+  match decode64 serialized with None -> None | Some str ->
     let buf = Bytes.of_string str in
     let low_16 = Bytes.get_uint16_be buf 2 in
     let lower_16 = Bytes.get_uint16_be buf 4 in
@@ -71,4 +82,3 @@ let parse64_opt serialized =
     let time = Int64.shift_left (Int64.of_int upper_bits) 32 |> Int64.logor lower_bits in
     let tick = Bytes.get_int16_be buf 6 in
     Some {time; tick}
-  | _error -> None

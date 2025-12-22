@@ -106,6 +106,7 @@ let recv_from_ws e =
     (* Reduce would be more accurate in case some of these override others. *)
     |> List.filter (Table.is_fresh state.data)
   in
+  Console.info ["worker: receiving"; List.length items |> Int.to_string; "items"];
   recv_items items;
   client_push_items items
 
@@ -117,6 +118,7 @@ let init_db table =
   let init_db_callback table =
     let open Lwt.Syntax in
     let* xs = Db.load_table table in
+    Console.info ["worker: loading"; List.length xs |> Int.to_string; "items"];
     recv_items ~save:false xs;
     push xs;
     Lwt.return_unit

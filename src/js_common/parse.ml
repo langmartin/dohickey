@@ -19,7 +19,8 @@ let dv_to_hlc dv =
 
 let hlc64 s : Hlc.t option =
   let uia = Jv.get Jv.global "Uint8Array" in
-  let arr = Jv.call uia "fromBase64" [|Jv.of_string s|] in
+  let opts = Jv.obj [|"alphabet", Jv.of_string "base64url"|] in
+  let arr = Jv.call uia "fromBase64" [|Jv.of_string s; opts|] in
   let buf = Tarray.buffer (Tarray.of_jv arr) in
   let dv = Tarray.Data_view.of_buffer buf in
   dv_to_hlc dv

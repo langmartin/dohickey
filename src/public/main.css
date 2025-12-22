@@ -27,3 +27,18 @@ th { border-right: var(--bd); }
     font-size: smaller;
     color: var(--lo-contrast);
 }
+
+#dohickey .ballot-box {display: none}
+#dohickey .voting .ballot-box {display: block}
+
+#votey.voting {background-color: #aef}
+
+.cell {display: flex; flex-direction: column}
+.vote {height: 0.25rem; width: 0.25rem}
+.text {flex: 1}
+
+.vote.rank-1 {background-color: #aea;}
+.vote.rank-2 {background-color: #aef;}
+.vote.rank-3 {background-color: #fff;}
+.vote.rank-4 {background-color: #eea;}
+.vote.rank-5 {background-color: #eaa;

@@ -1,8 +1,12 @@
 #!/bin/sh
-rate=10
+rate=5
 last=0
 
-fswatch src/js_* | while read _event; do
+fswatch src \
+        --extended \
+        --include '.*\.mli?' \
+        --exclude '.*' \
+    | while read _event; do
     if [[ $((`date +%s` - last > $rate)) -eq 1 ]]; then
        make
        last=`date +%s`

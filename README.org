@@ -1,5 +1,4 @@
-* Design
-
+* Dohickey
 ** Development
 
 - ~utop~ should be started from the ~bin~ directory, otherwise it
@@ -21,76 +20,49 @@
   odig doc dream # navigate to index
 #+end_src
 
-** Service Worker
+** Design
 
-The service worker can store data locally and take care of resending
-failures. It allows the application to run offline.
+*** Items
 
-1. [X] Connect with an open websocket
-2. [X] Client request/response
-3. [X] Local storage idempotently
-4. [X] Resend everything for anti-entropy
+Every action is a ~Dohickey.Item~, totally ordered over the life of
+the table by their ~Coda~, which includes a ~Hulc~ timestamp. The
+front-end state of the table is determined by applying all of the
+items. Items with the same ~Item.key~ may be organized as last writer
+wins by timetimestamp, but are also all represented in the history.
 
-*** Brr instead of sw_of_ocaml
+~Hulc~ timestamps are a base 64 encoded ~Hlc~ timestamp and a 32 bit
+node identifier, build from some host-ish identity (hostname or the
+user's name) and some system time stamp. They are opaque, used only
+for ordered tie breaking, but must be unique to each host in the
+system.
+
+*** Front End
+
+- Front end buttons create ~Request~ messages for the background
+  service worker and (usually) make no other change.
+
+- The service worker stores the items in indexeddb, sends them to the
+  server for broadcast, and delivers them back to the main client thread.
+
+- The main client thread listens for incoming ~Request~ messages from
+  either its own buttons or other users and draws them.
+
+- ~Dims~ ~Request~​s contain just the outer corner of the table,
+  ~Draw.sync_rows~ creates all of the cells necessary to fill out the
+  dimensions.
+
+- As a convention, cloned ~Domplate~ elements have a ~draw-inert~
+  attribute that is removed when the event listeners have been
+  attached. We use a querySelector to find inert elements and add the
+  listeners only once.
+
+**** Brr instead of sw_of_ocaml
 
 I copied in some code from this [[https://github.com/derui/sw_of_ocaml][sw_of_ocaml]] repo, some of which is
 outdated in its types (?). I couldn't get it working and I found a
 [[https://ocamlverse.net/content/web_networking.html#ocaml-to-javascript][better list of up to date tools]] which lead me to [[https://github.com/dbuenzli/brr/blob/master/test/test_worker.ml][Brr's worker example]].
 
-** Client
-
-The client draws incoming ~Req~ messages. It sends outgoing ~Item~ s
-to the service worker. The two loops are disconnected, the service
-worker is expected to send back the message that was just created on
-the client to add it to the drawing loop.
-
-1. [X] Start service worker
-2. [X] Event handlers on the basic buttons
-3. [X] Just call our own ~dims~ to increase the size of the table,
-   we'll wait until we make an item to get dims from the worker.
-4. [ ] Make one editor and attach it to the cell
-
-** js_common
-
-1. [X] Did jv_item on the plane to convert dohickey types to
-   javascript types, I think I missed a trick about deriving that
-   produces this stuff automatically.
-
-2. [ ] https://erratique.ch/software/jsont/doc/
-
-** Server
-
-1. [ ] Recv idempotently, sqlite
-2. [ ] Broadcast
-3. [ ] Average votes
-
-* Network
-
-1. [ ] Client
-   1. [ ] Connect & send
-   2. [ ] Local storage
-   3. [ ] Resend everything
-   4. [ ] Cursors
-
-2. [ ] Server
-   1. [ ] Recv idempotently, sqlite
-   2. [ ] Broadcast
-   3. [ ] Average votes
-
-* Pages
-
-1. [ ] Sign in
-
-2. [ ] Index of all sheets, create new sheet via url
-
-3. [ ] Table
-   1. [ ] Title
-   2. [ ] Add decision
-   3. [ ] Add criteria
-   4. [ ] Vote
-   5. [ ] Export markdown
-
-* Notes
+** Notes
 
 - No JS in =lib= :: =utop= loads the =lib= directory and all of the
   libraries required to support it. This makes sense for the server,

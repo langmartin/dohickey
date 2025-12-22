@@ -1,5 +1,9 @@
 * Upcoming
 
+** feat: export markdown
+
+** feat: store items on the server
+
 ** feat: actually log in to something
 
 ** fix: service worker makes the site available offline
@@ -12,11 +16,61 @@ and leave the network part in a the webworker.
 - [ ] add html resources to the caches object
 - [ ] add a fetch handler
 
-** feat: Timmy says content-editable is the way to go for styling
+** feat: cursors for text editing
 
-** feat: Vote
+** feat: count votes and show the results
+
+** feat: command line companion history
+
+With editing on the bottom left, roll history events one at a time on
+the bottom right with animation. Scrolling back through history
+events and click to highlight the position on the table.
+
+** feat: command line style interface
+
+In a bar at the bottom of the screen, a constantantly focused modal
+entry box that supports keyboard commands for selection, voting, and
+editing. The editor focus remains in the bottom left current line. In
+the table, the cell can show a universal view; you see your own
+editing ellipsis as well as that of any other user. Limit for width
+since you don't want to look back at more than ~40em of width for
+editing.
 
 * Complete
+
+** feat: vote
+
+- [X] use DOMplate to make a more realistic ballot box
+  - [X] move all the templates off together not in the table
+  - [X] clone table rows and cells in draw
+- [X] respond to item events to show/hide ballot boxes
+  - [X] do the rest of the client side item encoding
+  - [X] draw ballot boxes
+  - [X] attach events
+  - [X] cancel the vote
+- [X] color the cells with their vote results
+- [ ] attach results when voting is done and use that for the color too
+- [X] minimize vote events in the history
+- [X] click to edit fills the text without extra space
+- [X] highlight the voting button while voting and show vote colors only then
+
+*** counting the vote
+
+Voting works a little differently than I was thinking; in particular
+the IDs aren't necessary. I think that voting is a local behavior you can do
+anytime, and it's only results that coordinated in rounds. As a
+result:
+
+- [X] remove the ID from vote messages
+- [X] ignore non-items in a safe way
+- [ ] issue ~Result~​s which claim to summarize all ~Vote~​s with
+  earlier timestamps
+  - [ ] install the result colors iff you're not voting and restore
+    them when you stop voting
+- [X] remove the ~Call~ item
+- [ ] use ~Count~ only to count on the server
+- [ ] click votey to enter voting which:
+  - [ ] uses the color of your own votes
 
 ** feat: keep some or all stale history items and display them
 

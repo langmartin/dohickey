@@ -16,6 +16,9 @@ let qs1 ?(el=document_el) querySelector =
   | el :: _ -> Some el
   | _ -> None
 
+let qs1_in querySelector el =
+  El.find_first_by_selector ~root:el (Jstr.v querySelector)
+
 let add_ev_listener event f el =
   (* Console.debug(["add_ev_listener"; event; el]); *)
   let trg = El.as_target el in
@@ -23,8 +26,11 @@ let add_ev_listener event f el =
   ignore @@ Ev.listen event f trg;
   el
 
+let ev_target_el ev = ev |> Ev.target |> Ev.target_to_jv |> El.of_jv
+
+let ev_submit = Ev.Type.void (Jstr.v "submit")
+
 let el_on_submit f el =
-  let ev_submit = Ev.Type.void (Jstr.v "submit") in
   add_ev_listener ev_submit f el
 
 let on_submit qs f =
@@ -77,6 +83,15 @@ let set_attrs el xs =
     ()
     xs
 
+let set_at key value el =
+  let key = Jstr.of_string key in
+  begin
+    match value with
+      None -> El.set_at key None el
+    | Some v -> El.set_at key (Some (Jstr.of_string v)) el
+  end;
+  el
+
 let event_el event =
   event |> Ev.target |> Ev.target_to_jv |> El.of_jv
 
@@ -85,6 +100,7 @@ let is_tag tags el =
   List.mem tag tags
 
 let is_qs qs el = El.find_first_by_selector ~root:el (Jstr.v qs) |> Option.is_some
+let is_td el = el |> El.tag_name |> Jstr.to_string |> ( = ) "td"
 
 let rec find_parent is el =
   if is el then
@@ -107,5 +123,12 @@ let at_bool prop el =
   | Some _ -> true
   | None -> false
 
+let el_prop prop el =
+  Jv.get (El.to_jv el) prop
+
 let el_value_content el =
-  at_str "value" el
+  el_prop "value" el |> Jv.to_string
+
+let el_value_int el =
+  (* Jv.of_int is just identity and passed "2" through instead of 2 *)
+  el_prop "value" el |> Jv.to_string |> int_of_string
