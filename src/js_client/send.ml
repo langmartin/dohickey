@@ -54,3 +54,11 @@ let user user =
   |> of_user
   |> to_jv
   |> debug_post
+
+let cursor (row, col) =
+  let open Dohickey in
+  let coda = Coda.empty in
+  let body = Item.Cursor {row; col} in
+  post_item {coda; body}
+
+let cli_vote _pos = ()

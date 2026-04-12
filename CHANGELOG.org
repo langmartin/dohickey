@@ -1,10 +1,14 @@
 * Upcoming
 
+** feat: edit cells in markdown
+
 ** feat: export markdown
 
 ** feat: store items on the server
 
 ** feat: actually log in to something
+
+** fix: sig pipe on the server
 
 ** fix: service worker makes the site available offline
 
@@ -16,27 +20,31 @@ and leave the network part in a the webworker.
 - [ ] add html resources to the caches object
 - [ ] add a fetch handler
 
-** feat: cursors for text editing
+** feat: command line companion history
+
+Display the local history of the focused cell following the cursor.
 
 ** feat: count votes and show the results
 
-** feat: command line companion history
-
-With editing on the bottom left, roll history events one at a time on
-the bottom right with animation. Scrolling back through history
-events and click to highlight the position on the table.
+* Complete
 
 ** feat: command line style interface
 
-In a bar at the bottom of the screen, a constantantly focused modal
-entry box that supports keyboard commands for selection, voting, and
-editing. The editor focus remains in the bottom left current line. In
-the table, the cell can show a universal view; you see your own
-editing ellipsis as well as that of any other user. Limit for width
-since you don't want to look back at more than ~40em of width for
-editing.
+This changed a bunch in the doing.
 
-* Complete
+I'd like to have global keyboard shortcuts for navigating and editing.
+One side benefit: markdown can always appear in the entry box and the
+corresponding HTML in the table.
+
+- [X] global keyboard shortcut handler for
+  - [X] cursor selection
+  - [X] editing
+- [X] cursor items, unsaved in the indexdb but broadcast
+  - [X] ~Cli.dims~ doesn't update the cursor.edge correctly
+- [X] bottom bar for the editor and +shortcut help+
+- [X] hideable right side bar for the history
+- [X] add to the dimensions by navigating off the table
+- [X] scrolling
 
 ** fix: handle drift exceptions in hulc timestamp exchange
 

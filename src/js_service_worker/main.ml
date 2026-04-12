@@ -88,7 +88,7 @@ let recv_time_items items =
     |> parse_safe
     >>= recv_safe (Hlc.time_ms()) local
   in
-  fold_left_until recv_time state.hulc items
+  fold_while recv_time state.hulc items
   >>= fun ts -> state.hulc <- ts; Ok ts
 
 let recv_join_items save items =

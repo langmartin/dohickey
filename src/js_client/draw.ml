@@ -80,6 +80,29 @@ let sync_rows n ncols =
     sync_cols ncols row
   done
 
+(*
+   ======================================================================
+   Track the set of users for cursor display
+*)
+
+let add_user user =
+  let open Store in
+  if not (S.mem user cursor.users) then
+    cursor.users <- S.add user cursor.users
+
+let user_cls user =
+  let open Store in
+  if cursor.user = user then "cursor-self" else
+    let io = S.to_list cursor.users |> List.find_index (( = ) user) in
+    match io with
+    | None -> "cursor-user-4"
+    | Some i -> "cursor-user-" ^ (Int.to_string (i mod 4))
+
+(*
+   ======================================================================
+   Display page values & cursors
+*)
+
 open Dohickey
 
 let item_title title =
@@ -87,12 +110,24 @@ let item_title title =
   | Some el -> El.set_children el [El.txt' title]
   | None -> ()
 
+let mv_cls cls cell_qs =
+  let set is_set el = El.set_class (Jstr.v cls) is_set el in
+  "." ^ cls |> qs1 |>> set false |> ignore;
+  cell_qs |> qs1 |>> set true |> ignore
+
+let set_cursor user row col =
+  if Store.cursor.user = user then
+    Store.cursor.pos <- row, col;
+  let cell = Draw_common.cell_id row col in
+  mv_cls (user_cls user) cell.qs
+
 (*
    ======================================================================
    Received event handlers
 *)
 
 let dims (row, col) =
+  Console.debug [row; col];
   ignore @@ sync_rows row col
 
 let item (item : Item.t) =
@@ -102,11 +137,15 @@ let item (item : Item.t) =
   | Vote it -> Draw_vote.vote it
   | Result _it -> ()
   | Title it -> item_title it
+  | Cursor c ->
+    add_user item.coda.user;
+    set_cursor item.coda.user c.row c.col
   | Error it ->
     (* FIXME display errors *)
     Console.error [it]
 
 let user username =
+  Store.set_self username;
   match qs1 "#user" with
   | Some el -> El.set_children el [El.txt' username]
   | None -> ()

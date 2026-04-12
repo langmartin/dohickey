@@ -34,7 +34,7 @@ let send() =
 let recv system_time clock items =
   let open Util_result in
   let open Hulc in
-  fold_left_until
+  fold_while
     (fun clock (item : Item.t) ->
        parse_safe item.coda.time >>= recv_safe system_time clock)
     clock

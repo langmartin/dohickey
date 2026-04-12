@@ -34,6 +34,8 @@ let item_of_json j =
   | "vote" -> Vote (vote_of_json jb) |> ok
   | "count" -> Count true |> ok
   | "result" -> Result (vote_of_json jb) |> ok
+  | "cursor" -> Cursor {row = jb |> member "row" |> to_int;
+                        col = jb |> member "col" |> to_int} |> ok
   | "title" -> Title (to_string jb) |> ok
   | _ -> None
 
@@ -45,6 +47,9 @@ let item_to_json (i : Dohickey.Item.t) =
                         ("text", `String i.text)]
     | Vote i -> "vote", vote_to_json i
     | Result i -> "result", vote_to_json i
+    | Cursor c -> "cursor",
+                  `Assoc [("row", `Int c.row);
+                          ("col", `Int c.col);]
     | Count _ -> "count", `Bool true
     | Title i -> "title", `String i
     | Error i -> "error", `String i

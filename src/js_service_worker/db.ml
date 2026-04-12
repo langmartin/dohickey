@@ -103,10 +103,16 @@ let start_saving() =
       Lwt.return_unit
     end
 
+let is_cursor (item : Dohickey.Item.t) =
+  match item.body with
+    Cursor _ -> true
+  | _ -> false
+
 let save_item table item =
-  let table = Jv.of_string table in
-  Queue.add (Add (table, item)) state.queue;
-  start_saving()
+  if not (is_cursor item) then
+    let table = Jv.of_string table in
+    Queue.add (Add (table, item)) state.queue;
+    start_saving()
 
 let delete_item item =
   Queue.add (Delete item) state.queue;

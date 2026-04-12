@@ -29,6 +29,10 @@ let obj_to_item jv =
   let coda = Jv.get jv "coda" |> coda_of_jv in
   let body = Jv.get jv "body" in
   match jstr "type" jv with
+  | "cursor" ->
+    let row = jint "row" body in
+    let col = jint "col" body in
+    Some {coda; body = Cursor {row; col}}
   | "text" ->
     let row = jint "row" body in
     let col = jint "col" body in
@@ -65,6 +69,7 @@ let of_item item =
   let typ = match item.body with
     | Text _ -> "text"
     | Title _ -> "title"
+    | Cursor _ -> "cursor"
     | Error _ -> "error"
     | Count _ -> "count"
     | Vote _ -> "vote"
@@ -77,6 +82,10 @@ let of_item item =
         ("text", Jv.of_string i.text)
       |]
     | Title t -> Jv.of_string t
+    | Cursor c -> Jv.obj [|
+        ("row", Jv.of_int c.row);
+        ("col", Jv.of_int c.col);
+      |]
     | Error e -> Jv.of_string e
     | Count _ -> Jv.of_bool true
     | Vote v -> Jv.obj [|

@@ -24,15 +24,12 @@ let find_parent_cell_id el =
     None -> None | Some el ->
     Some (at_str "id" el)
 
-let mark_added el =
-  El.set_at (Jstr.v "data-inert") None el
-
 let add_vote_listeners el =
   let id_opt = find_parent_cell_id el >>= Draw_common.parse_id in
   match id_opt with None -> () | Some id ->
     el
     |> add_ev_listener Ev.change (send_vote id.row id.col)
-    |> mark_added
+    |> ignore
 
 (** Add any missing ballot box event handlers *)
 let add_all_ballot_boxes() =

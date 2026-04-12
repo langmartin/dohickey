@@ -82,6 +82,7 @@ let start_server listen_ip listen_port =
            | _ -> Dream.empty `Bad_Request);
 
       Dream.get "/main.css" (Public.css "main.css");
+      Dream.get "/skew.css" (Public.css "skew.css");
       Dream.get "/js_client.js" (Public.static_js "js_client.js");
       Dream.get "/js_service_worker.js" (Public.static_js "js_service_worker.js");
       Dream.get "/socket/:table"

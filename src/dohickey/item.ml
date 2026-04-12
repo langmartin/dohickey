@@ -1,3 +1,5 @@
+type cursor = {row: int; col: int}
+
 type body =
   | Text of Text.t
   | Count of bool
@@ -5,6 +7,7 @@ type body =
   | Result of Vote.t
   | Title of string
   | Error of string
+  | Cursor of cursor
 
 type t = {coda: Coda.t; body: body}
 
@@ -25,6 +28,7 @@ let key item =
   | Text item -> key_text item.row item.col
   | Vote item -> key_vote item.row item.col
   | Result item -> key_result item.row item.col
+  | Cursor _ -> "cursor-" ^ item.coda.user
   | Count _ -> "count"
   | Title _ -> "title"
   | Error _ -> "error"
@@ -64,5 +68,6 @@ let text_content item =
   | Vote _ -> "Vote"
   | Result _ -> "Result"
   | Count _ -> "Count vote"
+  | Cursor _ -> "Moved"
   | Title t -> t
   | Error e -> e

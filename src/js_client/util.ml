@@ -19,6 +19,7 @@ let qs1_in querySelector el =
 
 let add_ev_listener event f el =
   (* Console.debug(["add_ev_listener"; event; el]); *)
+  El.set_at (Jstr.v "data-inert") None el;
   let trg = El.as_target el in
   (* Save this value so we can detatch listeners? *)
   ignore @@ Ev.listen event f trg;

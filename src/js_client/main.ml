@@ -16,8 +16,12 @@ let rec recv_from_worker w ev =
   let req = Js_common.Req.of_jv data in
   begin
     match req.body with
-    | Some (Dims (row, col)) -> Draw.dims (row, col)
-    | Some Item item -> Draw.item item; Draw.hist item
+    | Some (Dims (row, col)) ->
+      Cli.dims row col;
+      Draw.dims (row, col)
+    | Some Item item ->
+      Draw.item item;
+      Draw.hist item
     | Some History item -> Draw.hist item
     | Some Init _table_id -> ()
     | Some User user -> Draw.user user
@@ -90,7 +94,9 @@ let main () =
   on_click "#add-option" add_option;
   on_click "#add-goal" add_goal;
   on_click "#title" edit_title;
-  Draw_editor.init();
+  Draw_history.init();
+  Cli.init();
+  Cli_edit.init();
   init_table();
   Console.info(["client hello"])
 

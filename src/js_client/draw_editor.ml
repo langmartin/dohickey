@@ -1,3 +1,7 @@
+(*
+   FIXME delete this whole thing
+ *)
+
 open Brr
 open Dohickey
 open Dohickey.Text
@@ -16,7 +20,7 @@ let state = {
   editing = StringMap.empty
 }
 
-let editor_qs = "#editor [name=text]"
+let editor_qs = "#cli [name=text]"
 
 let set_and_focus_text text focus =
   match qs1 editor_qs with None -> () | Some el ->
@@ -66,4 +70,5 @@ let on_submit ev =
     stop_editing()
 
 let init () =
-  Util.on_submit "#editor" on_submit
+  (* Util.on_submit "#cli" on_submit *)
+  ()

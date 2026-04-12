@@ -37,7 +37,7 @@ let find_subsequent ord ts ul =
     let op = if ord = "desc" then ( < ) else ( > ) in
     let ts0 = Jstr.to_string li_ts in
     let r = op (String.compare ts0 ts) 0 in
-    Console.debug ["ORD"; ord; ts0; ts; r];
+    (* Console.debug ["ORD"; ord; ts0; ts; r]; *)
     r
   in
   El.children ~only_els:true ul |> List.find_opt f
@@ -54,7 +54,7 @@ let insert_entry (item : Item.t) ul =
   |> ignore
 
 let item (item : Item.t) =
-  match qs1 "#history" with
+  match qs1 "#history ul" with
     None -> ()
   | Some ul ->
     let el = qs1 ("#" ^ (id item.coda.time)) in
@@ -62,3 +62,18 @@ let item (item : Item.t) =
       ()
     else
       insert_entry item ul
+
+let init() =
+  let arm qs f =
+    match qs1 (qs ^ "[data-inert]") with None -> () | Some el ->
+      ignore @@ add_ev_listener Ev.click f el
+  in
+  let cls on off = fun ev ->
+    Ev.stop_propagation ev;
+    match qs1 "#history" with None -> () | Some el ->
+      Console.debug [ev, el];
+      El.set_class (Jstr.v off) false el;
+      El.set_class (Jstr.v on) true el
+  in
+  arm "#history-close" (cls "closed" "open");
+  arm "#history-open" (cls "open" "closed");

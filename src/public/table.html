@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
     <link rel="stylesheet" href="main.css"/>
+    <!-- <link rel="stylesheet" href="skew.css"/> -->
     <script type="text/javascript" src="js_client.js"></script>
     <script type="text/javascript">main_table()</script>
   </head>
@@ -16,27 +17,39 @@
           <span id="title">title</span>
           <span id="user">{{username}}</span>
         </h1>
-        <table id="dohickey">
-          <tr id="dh-0">
-            <th id="dh-0-0">
-              <button id="votey">Vote</button>
-              <button id="add-option">Add option</button>
-              <button id="add-goal">Add goal</button>
-            </th>
-          </tr>
-        </table>
-        <form id="editor">
-          <textarea name="text">
-          </textarea>
-          <button type="submit">
-            Save
-          </button>
-        </form>
-      </div>
-      <div class="content-side">
-        <h1>Changes</h1>
-        <ul id="history" data-ord="desc">
-        </ul>
+        <div style="position:relative">
+          <table id="dohickey" style="">
+            <tr id="dh-0">
+              <th id="dh-0-0">
+                <button id="votey">Vote</button>
+                <button id="add-option">Add option</button>
+                <button id="add-goal">Add goal</button>
+              </th>
+            </tr>
+          </table>
+          <div id="history" class="open">
+            <div id="history-content">
+              <div class="flex-row">
+                <div class="small">history</div>
+                <button id="history-close" data-inert style="display:block">x</button>
+              </div>
+              <ul data-ord="desc"></ul>
+            </div>
+            <button id="history-open" data-inert>o</button>
+          </div>
+        </div>
+        <div id="cli" data-inert>
+          <ul id="cli-menu-bar" class="flex-row">
+            <li style="border-color:var(--bg)">⬅️➡️⬆️⬇️</li>
+            <li><span class="shortcut">e</span>dit</li>
+            <li><span class="shortcut">v</span>ote</li>
+          </ul>
+          <ul class="flex-row">
+            <li style="border-color:var(--bg)">%&nbsp;</li>
+            <li id="cli-cli" class="placeholder" data-inert contenteditable>lorem ipsum</li>
+            <li><button id="cli-save" data-inert>save</button></li>
+          </ul>
+        </div>
       </div>
     </div>
     <div hidden>
@@ -45,16 +58,16 @@
         <tr>
           <th id="header-template">
             <div class="cell">
-              <div class="text" />
+              <div class="text"></div>
             </div>
           </th>
           <td id="cell-template">
             <div class="cell">
-              <div class="vote" />
-              <div class="text" />
+              <div class="vote"></div>
+              <div class="text"></div>
             </div>
             <form class="ballot-box" hidden="true">
-              <select name="goodness" data-inert="">
+              <select name="goodness" data-inert>
                 <option value="1">best</option>
                 <option value="2">good</option>
                 <option value="3">fine</option>
