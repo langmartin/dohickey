@@ -26,7 +26,9 @@ With editing on the bottom left, roll history events one at a time on
 the bottom right with animation. Scrolling back through history
 events and click to highlight the position on the table.
 
-** feat: command line style interface
+* Complete
+
+** TODO feat: command line style interface
 
 In a bar at the bottom of the screen, a constantantly focused modal
 entry box that supports keyboard commands for selection, voting, and
@@ -36,7 +38,10 @@ editing ellipsis as well as that of any other user. Limit for width
 since you don't want to look back at more than ~40em of width for
 editing.
 
-* Complete
+- [ ] full width table
+- [ ] full width cli container
+- [ ] menu bar row
+- [ ] text entry row
 
 ** fix: handle drift exceptions in hulc timestamp exchange
 
