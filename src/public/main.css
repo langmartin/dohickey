@@ -10,6 +10,7 @@
 }
 :root {
     --bd: solid 1px var(--lo-contrast);
+    --vote-size: 0.25rem
 }
 
 .template { display: none; }
@@ -33,9 +34,13 @@ th { border-right: var(--bd); }
 
 #votey.voting {background-color: #aef}
 
-.cell {display: flex; flex-direction: column}
-.vote {height: 0.25rem; width: 0.25rem}
-.text {flex: 1}
+.vote {
+    height: var(--vote-size);
+    width: var(--vote-size);
+    position: relative;
+    border-radius: 50%
+}
+.cell .text {padding-left: var(--vote-size)}
 
 .vote.rank-1 {background-color: #aea;}
 .vote.rank-2 {background-color: #aef;}

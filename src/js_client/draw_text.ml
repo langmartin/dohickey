@@ -12,7 +12,7 @@ let entry_el is_header =
 let item_text (body : Text.t) (coda : Coda.t) =
   let _user = coda.user in
   let id = Draw_common.cell_id body.row body.col in
-  match id.qs ^ " .cell .text" |> qs1 with
+  match id.qs ^ " .text" |> qs1 with
   | Some el ->
     El.set_children el
       [El.txt' body.text]
@@ -37,7 +37,7 @@ let lemme_edit row col ev =
   Draw_editor.edit_cell row col
 
 let td_text row col el =
-  match qs1 ~el:el ".cell .text" with None -> el | Some elt ->
+  match qs1 ~el:el ".text" with None -> el | Some elt ->
     set_el_text row col elt;
     ignore @@ el_on_click (lemme_edit row col) elt;
     el

@@ -25,18 +25,17 @@
             </th>
           </tr>
         </table>
-        <form id="editor">
-          <textarea name="text">
-          </textarea>
-          <button type="submit">
-            Save
-          </button>
-        </form>
-      </div>
-      <div class="content-side">
-        <h1>Changes</h1>
-        <ul id="history" data-ord="desc">
-        </ul>
+        <div id="command-line">
+          <form id="cli">
+            <textarea name="text">
+            </textarea>
+            <button type="submit">
+              Save
+            </button>
+          </form>
+          <ul id="history" data-ord="desc">
+          </ul>
+        </div>
       </div>
     </div>
     <div hidden>
@@ -45,13 +44,13 @@
         <tr>
           <th id="header-template">
             <div class="cell">
-              <div class="text" />
+              <div class="text"></div>
             </div>
           </th>
           <td id="cell-template">
             <div class="cell">
-              <div class="vote" />
-              <div class="text" />
+              <div class="vote"></div>
+              <div class="text"></div>
             </div>
             <form class="ballot-box" hidden="true">
               <select name="goodness" data-inert="">
