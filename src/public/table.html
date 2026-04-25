@@ -25,8 +25,12 @@
             </th>
           </tr>
         </table>
-        <div id="command-line">
-          <form id="cli">
+        <div id="command-line" style="border:solid blue 1px">
+          <div id="cli">
+            <div id="cli-help" data-inert></div>
+            <div id="cli-cli" data-inert></div>
+          </div>
+          <form id="cli-old">
             <textarea name="text">
             </textarea>
             <button type="submit">
@@ -53,7 +57,7 @@
               <div class="text"></div>
             </div>
             <form class="ballot-box" hidden="true">
-              <select name="goodness" data-inert="">
+              <select name="goodness" data-inert>
                 <option value="1">best</option>
                 <option value="2">good</option>
                 <option value="3">fine</option>
