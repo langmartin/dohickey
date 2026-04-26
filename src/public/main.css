@@ -13,6 +13,10 @@
     --vote-size: 0.25rem
 }
 
+.placeholder {text-color: #ddd}
+.pa {padding: 1rem}
+.debug {border: solid blue 1px}
+
 .template { display: none; }
 #content { display: flex; flex-direction: row; }
 .content-main { flex: 1; }

@@ -91,6 +91,7 @@ let main () =
   on_click "#add-goal" add_goal;
   on_click "#title" edit_title;
   Draw_editor.init();
+  Cli.init();
   init_table();
   Console.info(["client hello"])
 

@@ -25,10 +25,13 @@
             </th>
           </tr>
         </table>
-        <div id="command-line" style="border:solid blue 1px">
+        <div id="command-line" class="debug">
           <div id="cli">
-            <div id="cli-help" data-inert></div>
-            <div id="cli-cli" data-inert></div>
+            <div id="cli-help" class="pa placeholder"></div>
+            <div>
+              <span>%&nbsp;</span>
+              <span id="cli-cli" data-inert contenteditable>foo</span>
+            </div>
           </div>
           <form id="cli-old">
             <textarea name="text">
