@@ -3,6 +3,7 @@ open Util
 open Js_common
 open Js_common.Domplate
 open Dohickey
+open Dohickey.Util_option
 
 let entry_el () =
   match qs1 "#hist-item-template" with

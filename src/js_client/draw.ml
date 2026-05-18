@@ -8,6 +8,7 @@
 
 open Brr
 open Util
+open Dohickey.Util_option
 
 (*
    Text
@@ -101,6 +102,9 @@ let item (item : Item.t) =
   | Vote it -> Draw_vote.vote it
   | Result _it -> ()
   | Title it -> item_title it
+  | Error it ->
+    (* FIXME display errors *)
+    Console.error [it]
 
 let user username =
   match qs1 "#user" with

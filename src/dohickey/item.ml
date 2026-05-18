@@ -4,6 +4,7 @@ type body =
   | Vote of Vote.t
   | Result of Vote.t
   | Title of string
+  | Error of string
 
 type t = {coda: Coda.t; body: body}
 
@@ -26,6 +27,7 @@ let key item =
   | Result item -> key_result item.row item.col
   | Count _ -> "count"
   | Title _ -> "title"
+  | Error _ -> "error"
 
 let text_key_of_vote item =
   match item.body with
@@ -63,3 +65,4 @@ let text_content item =
   | Result _ -> "Result"
   | Count _ -> "Count vote"
   | Title t -> t
+  | Error e -> e

@@ -1,5 +1,6 @@
 open Brr
 open Util
+open Dohickey.Util_option
 
 let is_voting() =
   match qs1 "#votey.voting" with None -> false | Some _ -> true

@@ -25,6 +25,12 @@ let recv (local : t) (remote : t) =
   let time = recv (time_ms()) local.time remote.time in
   {local with time}
 
+let recv_safe system_time (local:t) (remote:t) =
+  let open Hlc in
+  match recv_safe system_time local.time remote.time with
+    Error e -> Error e
+  | Ok time -> Ok {local with time}
+
 let sprint clock =
   let {time; node} = clock in
   Hlc.sprint64 time ^ node
@@ -59,3 +65,8 @@ let parse serialized =
   match parse_opt serialized with
   | Some t -> t
   | None -> raise Argument
+
+let parse_safe serialized =
+  match parse_opt serialized with
+    None -> Error "imparseable"
+  | Some t -> Ok t

@@ -47,6 +47,7 @@ let item_to_json (i : Dohickey.Item.t) =
     | Result i -> "result", vote_to_json i
     | Count _ -> "count", `Bool true
     | Title i -> "title", `String i
+    | Error i -> "error", `String i
   in
   `Assoc [("coda", coda_to_json i.coda); ("body", j); ("type", `String t)]
 

@@ -65,6 +65,7 @@ let of_item item =
   let typ = match item.body with
     | Text _ -> "text"
     | Title _ -> "title"
+    | Error _ -> "error"
     | Count _ -> "count"
     | Vote _ -> "vote"
     | Result _ -> "result"
@@ -76,6 +77,7 @@ let of_item item =
         ("text", Jv.of_string i.text)
       |]
     | Title t -> Jv.of_string t
+    | Error e -> Jv.of_string e
     | Count _ -> Jv.of_bool true
     | Vote v -> Jv.obj [|
         ("row", Jv.of_int v.row);

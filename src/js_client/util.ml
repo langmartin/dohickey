@@ -1,7 +1,5 @@
 open Brr
-
-let (>>=) = Option.bind
-let (|>>) o f = (Option.map f) o
+open Dohickey.Util_option
 
 let document_el = G.document |> Document.to_jv |> El.of_jv
 

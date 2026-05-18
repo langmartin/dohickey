@@ -38,6 +38,12 @@ editing.
 
 * Complete
 
+** fix: handle drift exceptions in hulc timestamp exchange
+
+We've been chatting about the HULC a lot at work, and I never put the
+drift and counter exception handling into the timestamp exchange in
+here.
+
 ** feat: vote
 
 - [X] use DOMplate to make a more realistic ballot box

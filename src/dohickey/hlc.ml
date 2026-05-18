@@ -3,6 +3,9 @@ type t = {
      tick : int
    }
 
+let max_drift = 60_000L
+let max_counter = 0xffff
+
 let zero = { time = 0L; tick = 0 }
 
 let time_ms() =
@@ -23,6 +26,7 @@ let send system local =
         0
   }
 
+(** system local remote *)
 let recv system local remote =
   let open Int64 in
   let logical = max system local.time |> max remote.time in
@@ -36,6 +40,16 @@ let recv system local remote =
       else
         0
   }
+
+let recv_safe system local remote =
+  let (-.) = Int64.sub in
+  let next = recv system local remote in
+  if next.time -. system  > max_drift then
+    Error "max drift"
+  else if next.tick > max_counter then
+    Error "max counter"
+  else
+    Ok next
 
 let parse16 serialized =
   let open String in

@@ -61,14 +61,6 @@ let send_time() =
   state.hulc <- t;
   sprint t
 
-let recv_time (item : Dohickey.Item.t) =
-  let open Hulc in
-  match parse_opt item.coda.time with
-  | Some m ->
-    let t = recv state.hulc m in
-    state.hulc <- t
-  | None -> ()
-
 let push items =
   client_push_items items;
   socket_send items
@@ -88,8 +80,18 @@ let recv_history items =
   append_history items;
   client_push_history items
 
-let recv_items ?(save=true) items =
-  List.iter recv_time items;
+let recv_time_items items =
+  let open Util_result in
+  let open Hulc in
+  let recv_time local (item : Dohickey.Item.t) =
+    item.coda.time
+    |> parse_safe
+    >>= recv_safe (Hlc.time_ms()) local
+  in
+  fold_left_until recv_time state.hulc items
+  >>= fun ts -> state.hulc <- ts; Ok ts
+
+let recv_join_items save items =
   let fresh = List.filter (Table.is_fresh state.data) items in
   let stale = List.filter (Table.is_stale state.data) items in
   if save then
@@ -97,6 +99,12 @@ let recv_items ?(save=true) items =
   List.iter join_item fresh;
   client_push_items fresh;
   recv_history stale
+
+let recv_items ?(save=true) items =
+  match recv_time_items items with Ok _ts ->
+    recv_join_items save items
+  | Error e ->
+    Console.error [e]
 
 let recv_from_ws e =
   let jv = (Message.Ev.data (Ev.as_type e) : Jstr.t) |> parse in
