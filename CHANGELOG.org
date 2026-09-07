@@ -24,7 +24,13 @@ and leave the network part in a the webworker.
 
 Display the local history of the focused cell following the cursor.
 
-** feat: count votes and show the results
+** TODO feat: count votes and show the results
+
+- [ ] keyboard shortcut for voting
+- [ ] voting interface in #cli
+- [ ] display voted results
+- [ ] count tabulates the results and sends them
+- [ ] display counted results
 
 * Complete
 
