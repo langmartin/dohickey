@@ -88,8 +88,13 @@ button { font-family: "cursive" }
     padding: 0.25em;
 }
 
-#cli li {
+#cli-entry>li {
     padding: 0.25rem;
+}
+
+#cli-vote-opts>li {
+    padding: 4rem;
+    border-radius: 0 0 0 0 var(--radius);
 }
 
 /* skip it

@@ -33,7 +33,6 @@ Display the local history of the focused cell following the cursor.
 - [ ] display counted results
 
 * Complete
-
 ** feat: command line style interface
 
 This changed a bunch in the doing.

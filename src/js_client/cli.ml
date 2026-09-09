@@ -46,12 +46,27 @@ let menu = [
   Alt, "v", Vote;
 ]
 
+let show qs show =
+  (* get from cursor.pos *)
+  let cls on off =
+    match qs1 qs with None -> () | Some el ->
+      El.set_class (Jstr.v off) false el;
+      El.set_class (Jstr.v on) true el
+  in
+  if show then
+    cls "open" "closed"
+  else
+    cls "closed" "open"
+
+let show_vote() = show "#cli-cli" false; show "#cli-vote-opts" true
+let show_cli() =  show "#cli-cli" true;  show "#cli-vote-opts" false
+
 let send c =
   let open Store in
   match c with
   | Left | Right | Up | Down -> Send.cursor cursor.pos
-  | Edit -> Cli_edit.start()
-  | Vote -> Send.cli_vote cursor.pos
+  | Edit -> show_cli(); Cli_edit.start()
+  | Vote -> show_vote(); Send.cli_vote cursor.pos
 
 let move c =
   let open Store in

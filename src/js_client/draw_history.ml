@@ -71,7 +71,6 @@ let init() =
   let cls on off = fun ev ->
     Ev.stop_propagation ev;
     match qs1 "#history" with None -> () | Some el ->
-      Console.debug [ev, el];
       El.set_class (Jstr.v off) false el;
       El.set_class (Jstr.v on) true el
   in

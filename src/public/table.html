@@ -20,10 +20,8 @@
         <div style="position:relative">
           <table id="dohickey" style="">
             <tr id="dh-0">
-              <th id="dh-0-0">
-                <button id="votey">Vote</button>
-                <button id="add-option">Add option</button>
-                <button id="add-goal">Add goal</button>
+              <th id="dh-0-0" class="placeholder">
+                title
               </th>
             </tr>
           </table>
@@ -44,9 +42,20 @@
             <li><span class="shortcut">e</span>dit</li>
             <li><span class="shortcut">v</span>ote</li>
           </ul>
-          <ul class="flex-row">
+          <ul id="cli-entry" class="flex-row">
             <li style="border-color:var(--bg)">%&nbsp;</li>
-            <li id="cli-cli" class="placeholder" data-inert contenteditable>lorem ipsum</li>
+            <li id="cli-cli" class="placeholder open" data-inert contenteditable>
+              lorem ipsum
+            </li>
+            <li id="cli-vote" class="closed" data-inert hidden>
+              <ul id="cli-vote-opts" class="flex-row">
+                <li data-val="1" class="vote rank-1">best</li>
+                <li data-val="2" class="vote rank-2">good</li>
+                <li data-val="3" class="vote rank-3">fine</li>
+                <li data-val="4" class="vote rank-4">bad</li>
+                <li data-val="5" class="vote rank-5">worst</li>
+              </ul>
+            </li>
             <li><button id="cli-save" data-inert>save</button></li>
           </ul>
         </div>
@@ -67,13 +76,6 @@
               <div class="text"></div>
             </div>
             <form class="ballot-box" hidden="true">
-              <select name="goodness" data-inert>
-                <option value="1">best</option>
-                <option value="2">good</option>
-                <option value="3">fine</option>
-                <option value="4">bad</option>
-                <option value="5">worst</option>
-              </select>
             </form>
           </td>
         </tr>
